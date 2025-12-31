@@ -112,6 +112,9 @@ const tama = {
     frame: 0,
     facingRight: true,
     isBlinking: false,
+    mouthOpen: false,
+    showHeart: false,
+    heartTimer: 0,
 };
 
 // Active objects (food, balls, etc.)
@@ -178,12 +181,60 @@ function drawTamagotchi() {
             ctx.fillRect(5, -2, s, s * 0.3);
         }
 
-        // Smile
+        // Dynamic mouth based on mood
+        const avgStat = (gameState.hunger + gameState.happiness + gameState.health) / 3;
         ctx.fillStyle = '#000';
-        ctx.fillRect(-10, 10, s * 2, s * 0.6);
+
+        if (tama.mouthOpen) {
+            // Open mouth (eating)
+            ctx.fillRect(-8, 8, s * 1.6, s * 1.2);
+        } else if (avgStat >= 70) {
+            // Happy - big smile
+            ctx.fillRect(-10, 10, s * 2, s * 0.6);
+            ctx.fillRect(-12, 11, s * 0.5, s * 0.5);
+            ctx.fillRect(11, 11, s * 0.5, s * 0.5);
+        } else if (avgStat >= 40) {
+            // Neutral - small smile
+            ctx.fillRect(-8, 10, s * 1.5, s * 0.5);
+        } else {
+            // Sad - frown
+            ctx.fillRect(-10, 12, s * 0.5, s * 0.5);
+            ctx.fillRect(-6, 13, s, s * 0.4);
+            ctx.fillRect(5, 13, s, s * 0.4);
+            ctx.fillRect(9, 12, s * 0.5, s * 0.5);
+        }
     }
 
     ctx.restore();
+
+    // Draw heart speech bubble
+    if (tama.showHeart) {
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // Speech bubble
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(-5, -50, 30, 25);
+        ctx.fillRect(-8, -48, 5, 5);
+        ctx.fillRect(-10, -45, 3, 3);
+
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-5, -50, 30, 25);
+
+        // 8-bit heart
+        ctx.fillStyle = '#ff1744';
+        const hx = 5;
+        const hy = -42;
+        const hs = 4;
+        ctx.fillRect(hx - hs, hy, hs, hs);
+        ctx.fillRect(hx + hs, hy, hs, hs);
+        ctx.fillRect(hx - hs*2, hy + hs, hs*4, hs);
+        ctx.fillRect(hx - hs, hy + hs*2, hs*2, hs);
+        ctx.fillRect(hx, hy + hs*3, hs, hs);
+
+        ctx.restore();
+    }
 }
 
 function drawPoop(poop) {
@@ -256,6 +307,14 @@ function animate(currentTime) {
 
     // Draw Tamagotchi
     drawTamagotchi();
+
+    // Update heart timer
+    if (tama.heartTimer > 0) {
+        tama.heartTimer--;
+        if (tama.heartTimer === 0) {
+            tama.showHeart = false;
+        }
+    }
 
     animationFrame++;
     requestAnimationFrame(animate);
@@ -393,23 +452,37 @@ function feedTamagotchi() {
                 if (dist < 10) {
                     // Remove food from active objects
                     activeObjects = activeObjects.filter(obj => obj !== food);
+
+                    // First bite - mouth opens
+                    tama.mouthOpen = true;
                     playSound(sounds.eat);
 
                     setTimeout(() => {
+                        // Close mouth
+                        tama.mouthOpen = false;
                         gameState.hunger = Math.min(100, gameState.hunger + 20);
                         updateUI();
 
                         setTimeout(() => {
-                            gameState.hunger = Math.min(100, gameState.hunger + 20);
+                            // Second bite - mouth opens again
+                            tama.mouthOpen = true;
                             playSound(sounds.eat);
+                            gameState.hunger = Math.min(100, gameState.hunger + 20);
                             updateUI();
 
                             setTimeout(() => {
-                                gameState.isInteracting = false;
-                                saveGame();
-                            }, 1000);
-                        }, 600);
-                    }, 400);
+                                // Close mouth and show heart
+                                tama.mouthOpen = false;
+                                tama.showHeart = true;
+                                tama.heartTimer = 120; // Show for ~2 seconds at 60fps
+
+                                setTimeout(() => {
+                                    gameState.isInteracting = false;
+                                    saveGame();
+                                }, 800);
+                            }, 300);
+                        }, 400);
+                    }, 300);
                 }
             }
         }
@@ -434,6 +507,10 @@ function playWithTamagotchi() {
         y: -10,
         targetY: ballY,
         landed: false,
+        playing: false,
+        bounceCount: 0,
+        bounceY: 0,
+        bounceVelocity: -4,
         draw() {
             ctx.fillStyle = '#fff';
             ctx.strokeStyle = '#000';
@@ -454,34 +531,51 @@ function playWithTamagotchi() {
             }
 
             // Check if Tamagotchi reached ball
-            if (this.landed) {
+            if (this.landed && !this.playing) {
                 const dist = Math.sqrt(
                     Math.pow(tama.x - ballX, 2) +
                     Math.pow(tama.y - (ballY - 20), 2)
                 );
 
                 if (dist < 10) {
-                    // Remove ball from active objects
-                    activeObjects = activeObjects.filter(obj => obj !== ball);
+                    this.playing = true;
                     playSound(sounds.play);
+                    gameState.happiness = Math.min(100, gameState.happiness + 20);
+                    gameState.hunger = Math.max(0, gameState.hunger - 2);
+                    updateUI();
+                }
+            }
 
-                    setTimeout(() => {
+            // Ball bouncing animation
+            if (this.playing) {
+                this.bounceY += this.bounceVelocity;
+                this.bounceVelocity += 0.3; // Gravity
+                this.y = this.targetY + this.bounceY;
+
+                // Bounce when hitting ground
+                if (this.y >= this.targetY && this.bounceVelocity > 0) {
+                    this.y = this.targetY;
+                    this.bounceVelocity = -3 - (this.bounceCount * 0.5);
+                    this.bounceCount++;
+
+                    if (this.bounceCount === 2) {
+                        playSound(sounds.play);
                         gameState.happiness = Math.min(100, gameState.happiness + 20);
-                        gameState.hunger = Math.max(0, gameState.hunger - 2);
+                        gameState.hunger = Math.max(0, gameState.hunger - 3);
                         updateUI();
+                    }
+
+                    // Stop after 3 bounces
+                    if (this.bounceCount >= 3) {
+                        activeObjects = activeObjects.filter(obj => obj !== ball);
+                        tama.showHeart = true;
+                        tama.heartTimer = 120;
 
                         setTimeout(() => {
-                            gameState.happiness = Math.min(100, gameState.happiness + 20);
-                            gameState.hunger = Math.max(0, gameState.hunger - 3);
-                            playSound(sounds.play);
-                            updateUI();
-
-                            setTimeout(() => {
-                                gameState.isInteracting = false;
-                                saveGame();
-                            }, 1000);
-                        }, 700);
-                    }, 400);
+                            gameState.isInteracting = false;
+                            saveGame();
+                        }, 1000);
+                    }
                 }
             }
         }
@@ -505,6 +599,10 @@ function cleanTamagotchi() {
         setTimeout(() => {
             gameState.health = Math.min(100, gameState.health + 15);
             updateUI();
+
+            // Show heart
+            tama.showHeart = true;
+            tama.heartTimer = 120;
 
             setTimeout(() => {
                 gameState.isInteracting = false;
@@ -531,6 +629,10 @@ function healTamagotchi() {
         setTimeout(() => {
             gameState.health = Math.min(100, gameState.health + 25);
             updateUI();
+
+            // Show heart
+            tama.showHeart = true;
+            tama.heartTimer = 120;
 
             setTimeout(() => {
                 gameState.isInteracting = false;
