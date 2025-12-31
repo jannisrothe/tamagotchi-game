@@ -9,11 +9,27 @@ class Tamagotchi {
         this.isSick = false;
         this.isAlive = true;
         this.animationFrame = 0;
-        this.lastUpdate = Date.now();
         this.birthTime = Date.now();
+
+        this.x = 60;
+        this.y = 60;
+        this.targetX = 60;
+        this.targetY = 60;
+        this.facingRight = true;
+        this.isBlinking = false;
+
+        this.poops = [];
+        this.particles = [];
 
         this.canvas = document.getElementById('petCanvas');
         this.ctx = this.canvas.getContext('2d');
+
+        this.colors = {
+            egg: { primary: '#a8d8ea', secondary: '#aa96da', accent: '#fcbad3' },
+            baby: { primary: '#ffb6b9', secondary: '#fae3d9', accent: '#ff6b9d' },
+            child: { primary: '#92e3a9', secondary: '#7ec4cf', accent: '#4ecdc4' },
+            adult: { primary: '#ff9a56', secondary: '#ffcd38', accent: '#ff5e5b' }
+        };
 
         this.loadGame();
         this.init();
@@ -25,7 +41,11 @@ class Tamagotchi {
 
         setInterval(() => this.tick(), 1000);
         setInterval(() => this.updateAge(), 10000);
-        setInterval(() => this.animate(), 500);
+        setInterval(() => this.animate(), 300);
+        setInterval(() => this.updateMovement(), 50);
+        setInterval(() => this.randomMove(), 3000);
+        setInterval(() => this.randomBlink(), 2000);
+        setInterval(() => this.maybeSpawnPoop(), 15000);
 
         document.getElementById('feed-btn').addEventListener('click', () => this.feed());
         document.getElementById('play-btn').addEventListener('click', () => this.play());
@@ -39,7 +59,7 @@ class Tamagotchi {
         this.hunger = Math.max(0, this.hunger - 1);
         this.happiness = Math.max(0, this.happiness - 0.5);
 
-        if (this.isDirty) {
+        if (this.poops.length > 0) {
             this.health = Math.max(0, this.health - 2);
         }
 
@@ -52,16 +72,11 @@ class Tamagotchi {
             this.showMessage('TAMA is sick!');
         }
 
-        if (Math.random() < 0.05 && !this.isDirty) {
-            this.isDirty = true;
-        }
-
         if (this.hunger === 0 || this.health === 0) {
             this.die();
         }
 
         this.updateUI();
-        this.draw();
         this.saveGame();
     }
 
@@ -85,11 +100,78 @@ class Tamagotchi {
     evolve(newStage) {
         this.stage = newStage;
         this.showMessage(`TAMA evolved to ${newStage.toUpperCase()}!`);
+        this.createParticles(this.x, this.y, '✨', 10);
     }
 
     animate() {
-        this.animationFrame = (this.animationFrame + 1) % 2;
+        this.animationFrame = (this.animationFrame + 1) % 4;
+        this.updateParticles();
         this.draw();
+    }
+
+    randomMove() {
+        if (!this.isAlive || this.stage === 'egg') return;
+
+        this.targetX = 20 + Math.random() * 80;
+        this.targetY = 40 + Math.random() * 60;
+    }
+
+    updateMovement() {
+        if (!this.isAlive || this.stage === 'egg') return;
+
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 1) {
+            const speed = 0.5;
+            this.x += (dx / distance) * speed;
+            this.y += (dy / distance) * speed;
+            this.facingRight = dx > 0;
+        }
+    }
+
+    randomBlink() {
+        if (!this.isAlive || this.stage === 'egg') return;
+
+        this.isBlinking = true;
+        setTimeout(() => {
+            this.isBlinking = false;
+        }, 200);
+    }
+
+    maybeSpawnPoop() {
+        if (!this.isAlive || this.stage === 'egg' || this.poops.length >= 3) return;
+
+        if (Math.random() < 0.4) {
+            this.poops.push({
+                x: 20 + Math.random() * 80,
+                y: 80 + Math.random() * 20
+            });
+        }
+    }
+
+    createParticles(x, y, emoji, count) {
+        for (let i = 0; i < count; i++) {
+            this.particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 2,
+                vy: -Math.random() * 3 - 1,
+                life: 60,
+                emoji: emoji
+            });
+        }
+    }
+
+    updateParticles() {
+        this.particles = this.particles.filter(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.1;
+            p.life--;
+            return p.life > 0;
+        });
     }
 
     feed() {
@@ -97,6 +179,7 @@ class Tamagotchi {
 
         this.hunger = Math.min(100, this.hunger + 20);
         this.showMessage('Fed TAMA!');
+        this.createParticles(this.x, this.y - 10, '🍖', 5);
         this.updateUI();
         this.saveGame();
     }
@@ -107,6 +190,7 @@ class Tamagotchi {
         this.happiness = Math.min(100, this.happiness + 20);
         this.hunger = Math.max(0, this.hunger - 5);
         this.showMessage('Played with TAMA!');
+        this.createParticles(this.x, this.y - 10, '♪', 8);
         this.updateUI();
         this.saveGame();
     }
@@ -114,12 +198,13 @@ class Tamagotchi {
     clean() {
         if (!this.isAlive) return;
 
-        if (this.isDirty) {
-            this.isDirty = false;
+        if (this.poops.length > 0) {
+            this.poops = [];
             this.health = Math.min(100, this.health + 10);
-            this.showMessage('Cleaned TAMA!');
+            this.showMessage('Cleaned up!');
+            this.createParticles(this.x, this.y, '✨', 12);
         } else {
-            this.showMessage('TAMA is already clean!');
+            this.showMessage('Nothing to clean!');
         }
         this.updateUI();
         this.saveGame();
@@ -132,6 +217,7 @@ class Tamagotchi {
             this.isSick = false;
             this.health = Math.min(100, this.health + 30);
             this.showMessage('Healed TAMA!');
+            this.createParticles(this.x, this.y, '💊', 6);
         } else {
             this.showMessage('TAMA is healthy!');
         }
@@ -164,165 +250,284 @@ class Tamagotchi {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+        this.poops.forEach(poop => this.drawPoop(poop.x, poop.y));
+
         if (!this.isAlive) {
             this.drawDead();
-            return;
+        } else {
+            switch(this.stage) {
+                case 'egg':
+                    this.drawEgg();
+                    break;
+                case 'baby':
+                    this.drawBaby();
+                    break;
+                case 'child':
+                    this.drawChild();
+                    break;
+                case 'adult':
+                    this.drawAdult();
+                    break;
+            }
+
+            if (this.isSick) {
+                this.drawSickIcon();
+            }
         }
 
-        switch(this.stage) {
-            case 'egg':
-                this.drawEgg();
-                break;
-            case 'baby':
-                this.drawBaby();
-                break;
-            case 'child':
-                this.drawChild();
-                break;
-            case 'adult':
-                this.drawAdult();
-                break;
-        }
-
-        if (this.isDirty) {
-            this.drawDirt();
-        }
-
-        if (this.isSick) {
-            this.drawSickIcon();
-        }
+        this.particles.forEach(p => this.drawParticle(p));
     }
 
-    drawPixel(x, y, size = 6) {
-        this.ctx.fillStyle = '#000';
-        this.ctx.fillRect(x * size, y * size, size, size);
+    getMood() {
+        if (this.hunger < 30) return 'sad';
+        if (this.happiness < 30) return 'bored';
+        if (this.isSick) return 'sick';
+        if (this.happiness > 70 && this.hunger > 70) return 'happy';
+        return 'neutral';
+    }
+
+    drawColoredPixel(x, y, color, size = 4) {
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(x, y, size, size);
     }
 
     drawEgg() {
-        const offset = this.animationFrame * 2;
+        const colors = this.colors.egg;
+        const bounce = this.animationFrame < 2 ? 0 : 2;
+        const cx = this.x;
+        const cy = this.y + bounce;
 
-        for (let y = 5; y <= 10; y++) {
-            for (let x = 7; x <= 12; x++) {
-                if (y === 5 && (x < 8 || x > 11)) continue;
-                if (y === 10 && (x < 8 || x > 11)) continue;
-                this.drawPixel(x, y + offset);
+        for (let dy = -12; dy <= 12; dy += 4) {
+            for (let dx = -10; dx <= 10; dx += 4) {
+                const dist = Math.sqrt(dx * dx + dy * dy * 1.5);
+                if (dist < 14) {
+                    const color = dy < 0 ? colors.primary : colors.secondary;
+                    this.drawColoredPixel(cx + dx, cy + dy, color);
+                }
             }
         }
+
+        this.drawColoredPixel(cx - 6, cy - 4, colors.accent);
+        this.drawColoredPixel(cx - 2, cy - 4, colors.accent);
     }
 
     drawBaby() {
-        const offset = this.animationFrame * 1;
+        const colors = this.colors.baby;
+        const mood = this.getMood();
+        const bounce = Math.sin(this.animationFrame * Math.PI / 2) * 2;
+        const cx = this.x;
+        const cy = this.y + bounce;
 
-        this.drawPixel(7, 6 + offset);
-        this.drawPixel(8, 6 + offset);
-        this.drawPixel(10, 6 + offset);
-        this.drawPixel(11, 6 + offset);
-
-        for (let x = 6; x <= 12; x++) {
-            this.drawPixel(x, 8 + offset);
-            this.drawPixel(x, 9 + offset);
+        this.ctx.save();
+        if (!this.facingRight) {
+            this.ctx.translate(this.canvas.width, 0);
+            this.ctx.scale(-1, 1);
         }
 
-        this.drawPixel(7, 10 + offset);
-        this.drawPixel(8, 10 + offset);
-        this.drawPixel(10, 10 + offset);
-        this.drawPixel(11, 10 + offset);
+        const drawX = this.facingRight ? cx : this.canvas.width - cx;
 
-        this.drawPixel(7, 11 + offset);
-        this.drawPixel(11, 11 + offset);
+        for (let dy = -8; dy <= 8; dy += 4) {
+            for (let dx = -8; dx <= 8; dx += 4) {
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 12) {
+                    this.drawColoredPixel(drawX + dx, cy + dy, colors.primary);
+                }
+            }
+        }
+
+        if (!this.isBlinking) {
+            this.drawColoredPixel(drawX - 4, cy - 2, '#2c3e50', 3);
+            this.drawColoredPixel(drawX + 4, cy - 2, '#2c3e50', 3);
+        } else {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 5, cy - 1, 4, 1);
+            this.ctx.fillRect(drawX + 3, cy - 1, 4, 1);
+        }
+
+        if (mood === 'happy') {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 3, cy + 4, 6, 2);
+            this.drawColoredPixel(drawX - 5, cy + 3, '#2c3e50', 2);
+            this.drawColoredPixel(drawX + 4, cy + 3, '#2c3e50', 2);
+        } else if (mood === 'sad') {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 3, cy + 6, 6, 2);
+            this.drawColoredPixel(drawX - 5, cy + 7, '#2c3e50', 2);
+            this.drawColoredPixel(drawX + 4, cy + 7, '#2c3e50', 2);
+        }
+
+        this.drawColoredPixel(drawX - 6, cy + 8, colors.accent);
+        this.drawColoredPixel(drawX + 6, cy + 8, colors.accent);
+
+        this.ctx.restore();
     }
 
     drawChild() {
-        const offset = this.animationFrame * 1;
+        const colors = this.colors.child;
+        const mood = this.getMood();
+        const bounce = Math.sin(this.animationFrame * Math.PI / 2) * 2;
+        const cx = this.x;
+        const cy = this.y + bounce;
 
-        for (let x = 7; x <= 11; x++) {
-            this.drawPixel(x, 5 + offset);
+        this.ctx.save();
+        if (!this.facingRight) {
+            this.ctx.translate(this.canvas.width, 0);
+            this.ctx.scale(-1, 1);
         }
 
-        this.drawPixel(6, 6 + offset);
-        this.drawPixel(12, 6 + offset);
+        const drawX = this.facingRight ? cx : this.canvas.width - cx;
 
-        this.drawPixel(7, 7 + offset);
-        this.drawPixel(11, 7 + offset);
+        this.drawColoredPixel(drawX - 10, cy - 12, colors.secondary);
+        this.drawColoredPixel(drawX + 10, cy - 12, colors.secondary);
 
-        for (let x = 6; x <= 12; x++) {
-            this.drawPixel(x, 8 + offset);
-            this.drawPixel(x, 9 + offset);
+        for (let dy = -10; dy <= 10; dy += 4) {
+            for (let dx = -10; dx <= 10; dx += 4) {
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 14) {
+                    this.drawColoredPixel(drawX + dx, cy + dy, colors.primary);
+                }
+            }
         }
 
-        this.drawPixel(6, 10 + offset);
-        this.drawPixel(8, 10 + offset);
-        this.drawPixel(10, 10 + offset);
-        this.drawPixel(12, 10 + offset);
+        if (!this.isBlinking) {
+            this.drawColoredPixel(drawX - 5, cy - 3, '#2c3e50', 4);
+            this.drawColoredPixel(drawX + 5, cy - 3, '#2c3e50', 4);
+            this.drawColoredPixel(drawX - 5, cy - 4, '#fff', 2);
+            this.drawColoredPixel(drawX + 5, cy - 4, '#fff', 2);
+        } else {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 6, cy - 2, 5, 1);
+            this.ctx.fillRect(drawX + 3, cy - 2, 5, 1);
+        }
 
-        this.drawPixel(6, 11 + offset);
-        this.drawPixel(12, 11 + offset);
+        if (mood === 'happy') {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 4, cy + 5, 8, 2);
+            this.drawColoredPixel(drawX - 6, cy + 4, '#2c3e50', 2);
+            this.drawColoredPixel(drawX + 5, cy + 4, '#2c3e50', 2);
+        } else if (mood === 'sad') {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 4, cy + 8, 8, 2);
+            this.drawColoredPixel(drawX - 6, cy + 9, '#2c3e50', 2);
+            this.drawColoredPixel(drawX + 5, cy + 9, '#2c3e50', 2);
+        }
+
+        this.drawColoredPixel(drawX - 8, cy + 12, colors.accent);
+        this.drawColoredPixel(drawX + 8, cy + 12, colors.accent);
+        this.drawColoredPixel(drawX - 12, cy + 10, colors.accent);
+        this.drawColoredPixel(drawX + 12, cy + 10, colors.accent);
+
+        this.ctx.restore();
     }
 
     drawAdult() {
-        const offset = this.animationFrame * 1;
+        const colors = this.colors.adult;
+        const mood = this.getMood();
+        const bounce = Math.sin(this.animationFrame * Math.PI / 2) * 3;
+        const cx = this.x;
+        const cy = this.y + bounce;
 
-        this.drawPixel(7, 4 + offset);
-        this.drawPixel(11, 4 + offset);
-
-        for (let x = 6; x <= 12; x++) {
-            this.drawPixel(x, 5 + offset);
+        this.ctx.save();
+        if (!this.facingRight) {
+            this.ctx.translate(this.canvas.width, 0);
+            this.ctx.scale(-1, 1);
         }
 
-        this.drawPixel(5, 6 + offset);
-        this.drawPixel(13, 6 + offset);
+        const drawX = this.facingRight ? cx : this.canvas.width - cx;
 
-        this.drawPixel(6, 7 + offset);
-        this.drawPixel(12, 7 + offset);
+        this.drawColoredPixel(drawX - 12, cy - 14, colors.secondary);
+        this.drawColoredPixel(drawX + 12, cy - 14, colors.secondary);
 
-        this.drawPixel(7, 7 + offset);
-        this.drawPixel(11, 7 + offset);
-
-        for (let x = 5; x <= 13; x++) {
-            this.drawPixel(x, 8 + offset);
-            this.drawPixel(x, 9 + offset);
+        for (let dy = -12; dy <= 12; dy += 4) {
+            for (let dx = -12; dx <= 12; dx += 4) {
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 16) {
+                    this.drawColoredPixel(drawX + dx, cy + dy, colors.primary);
+                }
+            }
         }
 
-        this.drawPixel(5, 10 + offset);
-        this.drawPixel(7, 10 + offset);
-        this.drawPixel(9, 10 + offset);
-        this.drawPixel(11, 10 + offset);
-        this.drawPixel(13, 10 + offset);
+        if (!this.isBlinking) {
+            this.drawColoredPixel(drawX - 6, cy - 4, '#2c3e50', 5);
+            this.drawColoredPixel(drawX + 6, cy - 4, '#2c3e50', 5);
+            this.drawColoredPixel(drawX - 6, cy - 5, '#fff', 3);
+            this.drawColoredPixel(drawX + 6, cy - 5, '#fff', 3);
+        } else {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 8, cy - 3, 6, 2);
+            this.ctx.fillRect(drawX + 4, cy - 3, 6, 2);
+        }
 
-        this.drawPixel(5, 11 + offset);
-        this.drawPixel(7, 11 + offset);
-        this.drawPixel(11, 11 + offset);
-        this.drawPixel(13, 11 + offset);
+        if (mood === 'happy') {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 5, cy + 6, 10, 3);
+            this.drawColoredPixel(drawX - 7, cy + 5, '#2c3e50', 3);
+            this.drawColoredPixel(drawX + 6, cy + 5, '#2c3e50', 3);
+        } else if (mood === 'sad') {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 5, cy + 10, 10, 3);
+            this.drawColoredPixel(drawX - 7, cy + 11, '#2c3e50', 3);
+            this.drawColoredPixel(drawX + 6, cy + 11, '#2c3e50', 3);
+        } else {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 5, cy + 8, 10, 2);
+        }
+
+        this.drawColoredPixel(drawX - 10, cy + 14, colors.accent);
+        this.drawColoredPixel(drawX + 10, cy + 14, colors.accent);
+        this.drawColoredPixel(drawX - 14, cy + 12, colors.accent);
+        this.drawColoredPixel(drawX + 14, cy + 12, colors.accent);
+
+        this.ctx.restore();
     }
 
     drawDead() {
-        for (let x = 6; x <= 12; x++) {
-            this.drawPixel(x, 9);
+        const cx = 60;
+        const cy = 60;
+
+        this.ctx.fillStyle = '#95a5a6';
+        for (let dy = -10; dy <= 10; dy += 4) {
+            for (let dx = -10; dx <= 10; dx += 4) {
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 14) {
+                    this.drawColoredPixel(cx + dx, cy + dy, '#95a5a6');
+                }
+            }
         }
-        this.drawPixel(7, 8);
-        this.drawPixel(11, 8);
 
-        this.drawPixel(5, 10);
-        this.drawPixel(13, 10);
+        this.ctx.fillStyle = '#2c3e50';
+        this.ctx.fillRect(cx - 6, cy - 2, 3, 3);
+        this.ctx.fillRect(cx + 4, cy - 2, 3, 3);
 
-        this.drawPixel(8, 6);
-        this.drawPixel(10, 6);
-
-        this.ctx.fillStyle = '#000';
-        this.ctx.font = 'bold 12px "Courier New"';
-        this.ctx.fillText('RIP', 42, 80);
+        this.ctx.font = 'bold 14px "Courier New"';
+        this.ctx.fillText('RIP', cx - 12, cy + 35);
     }
 
-    drawDirt() {
-        this.drawPixel(14, 14, 4);
-        this.drawPixel(15, 15, 4);
-        this.drawPixel(16, 14, 4);
+    drawPoop(x, y) {
+        this.ctx.fillStyle = '#8b6914';
+        this.drawColoredPixel(x - 3, y, '#6b5310', 4);
+        this.drawColoredPixel(x + 2, y, '#6b5310', 4);
+        this.drawColoredPixel(x - 1, y - 4, '#8b6914', 4);
+        this.drawColoredPixel(x - 3, y + 4, '#5a4208', 4);
+        this.drawColoredPixel(x + 2, y + 4, '#5a4208', 4);
     }
 
     drawSickIcon() {
-        this.drawPixel(1, 2, 4);
-        this.drawPixel(2, 1, 4);
-        this.drawPixel(2, 3, 4);
+        const cx = this.x;
+        const cy = this.y - 20;
+
+        this.ctx.fillStyle = '#e74c3c';
+        this.ctx.fillRect(cx - 2, cy - 6, 2, 8);
+        this.ctx.fillRect(cx - 6, cy - 2, 8, 2);
+        this.ctx.fillRect(cx, cy + 4, 2, 2);
+    }
+
+    drawParticle(p) {
+        this.ctx.save();
+        this.ctx.globalAlpha = p.life / 60;
+        this.ctx.font = '12px Arial';
+        this.ctx.fillText(p.emoji, p.x - 6, p.y);
+        this.ctx.restore();
     }
 
     saveGame() {
@@ -332,10 +537,10 @@ class Tamagotchi {
             health: this.health,
             age: this.age,
             stage: this.stage,
-            isDirty: this.isDirty,
             isSick: this.isSick,
             isAlive: this.isAlive,
             birthTime: this.birthTime,
+            poops: this.poops,
             lastSave: Date.now()
         };
         localStorage.setItem('tamagotchi', JSON.stringify(data));
@@ -352,10 +557,10 @@ class Tamagotchi {
             this.health = Math.max(0, data.health - (timePassed * 0.5));
             this.age = data.age;
             this.stage = data.stage;
-            this.isDirty = data.isDirty;
             this.isSick = data.isSick;
             this.isAlive = data.isAlive && this.hunger > 0 && this.health > 0;
             this.birthTime = data.birthTime;
+            this.poops = data.poops || [];
         }
     }
 }
