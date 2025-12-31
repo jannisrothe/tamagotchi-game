@@ -10,6 +10,8 @@ class Tamagotchi {
         this.isAlive = true;
         this.animationFrame = 0;
         this.birthTime = Date.now();
+        this.isPaused = false;
+        this.pausedTime = 0;
 
         this.x = 60;
         this.y = 60;
@@ -20,6 +22,8 @@ class Tamagotchi {
 
         this.poops = [];
         this.particles = [];
+
+        this.intervals = [];
 
         this.canvas = document.getElementById('petCanvas');
         this.ctx = this.canvas.getContext('2d');
@@ -39,22 +43,24 @@ class Tamagotchi {
         this.updateUI();
         this.draw();
 
-        setInterval(() => this.tick(), 1000);
-        setInterval(() => this.updateAge(), 10000);
-        setInterval(() => this.animate(), 300);
-        setInterval(() => this.updateMovement(), 50);
-        setInterval(() => this.randomMove(), 3000);
-        setInterval(() => this.randomBlink(), 2000);
-        setInterval(() => this.maybeSpawnPoop(), 15000);
+        this.intervals.push(setInterval(() => this.tick(), 1000));
+        this.intervals.push(setInterval(() => this.updateAge(), 1000));
+        this.intervals.push(setInterval(() => this.animate(), 300));
+        this.intervals.push(setInterval(() => this.updateMovement(), 50));
+        this.intervals.push(setInterval(() => this.randomMove(), 3000));
+        this.intervals.push(setInterval(() => this.randomBlink(), 2000));
+        this.intervals.push(setInterval(() => this.maybeSpawnPoop(), 15000));
 
         document.getElementById('feed-btn').addEventListener('click', () => this.feed());
         document.getElementById('play-btn').addEventListener('click', () => this.play());
         document.getElementById('clean-btn').addEventListener('click', () => this.clean());
         document.getElementById('medicine-btn').addEventListener('click', () => this.heal());
+        document.getElementById('pause-btn').addEventListener('click', () => this.togglePause());
+        document.getElementById('new-game-btn').addEventListener('click', () => this.newGame());
     }
 
     tick() {
-        if (!this.isAlive) return;
+        if (!this.isAlive || this.isPaused) return;
 
         this.hunger = Math.max(0, this.hunger - 1);
         this.happiness = Math.max(0, this.happiness - 0.5);
@@ -81,16 +87,18 @@ class Tamagotchi {
     }
 
     updateAge() {
-        if (!this.isAlive) return;
+        if (!this.isAlive || this.isPaused) return;
 
-        const ageInSeconds = Math.floor((Date.now() - this.birthTime) / 1000);
-        this.age = Math.floor(ageInSeconds / 10);
+        const ageInSeconds = Math.floor((Date.now() - this.birthTime - this.pausedTime) / 1000);
+        this.age = ageInSeconds;
 
-        if (this.stage === 'egg' && this.age >= 5) {
+        const DAY = 86400;
+
+        if (this.stage === 'egg' && ageInSeconds >= DAY * 1) {
             this.evolve('baby');
-        } else if (this.stage === 'baby' && this.age >= 20) {
+        } else if (this.stage === 'baby' && ageInSeconds >= DAY * 6) {
             this.evolve('child');
-        } else if (this.stage === 'child' && this.age >= 40) {
+        } else if (this.stage === 'child' && ageInSeconds >= DAY * 14) {
             this.evolve('adult');
         }
 
@@ -104,20 +112,22 @@ class Tamagotchi {
     }
 
     animate() {
-        this.animationFrame = (this.animationFrame + 1) % 4;
-        this.updateParticles();
+        if (!this.isPaused) {
+            this.animationFrame = (this.animationFrame + 1) % 4;
+            this.updateParticles();
+        }
         this.draw();
     }
 
     randomMove() {
-        if (!this.isAlive || this.stage === 'egg') return;
+        if (!this.isAlive || this.stage === 'egg' || this.isPaused) return;
 
         this.targetX = 20 + Math.random() * 80;
         this.targetY = 40 + Math.random() * 60;
     }
 
     updateMovement() {
-        if (!this.isAlive || this.stage === 'egg') return;
+        if (!this.isAlive || this.stage === 'egg' || this.isPaused) return;
 
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
@@ -132,7 +142,7 @@ class Tamagotchi {
     }
 
     randomBlink() {
-        if (!this.isAlive || this.stage === 'egg') return;
+        if (!this.isAlive || this.stage === 'egg' || this.isPaused) return;
 
         this.isBlinking = true;
         setTimeout(() => {
@@ -141,7 +151,7 @@ class Tamagotchi {
     }
 
     maybeSpawnPoop() {
-        if (!this.isAlive || this.stage === 'egg' || this.poops.length >= 3) return;
+        if (!this.isAlive || this.stage === 'egg' || this.poops.length >= 3 || this.isPaused) return;
 
         if (Math.random() < 0.4) {
             this.poops.push({
@@ -174,8 +184,34 @@ class Tamagotchi {
         });
     }
 
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        const pauseIcon = document.getElementById('pause-icon');
+        const pauseLabel = document.getElementById('pause-label');
+
+        if (this.isPaused) {
+            pauseIcon.textContent = '▶';
+            pauseLabel.textContent = 'RESUME';
+            this.pauseStartTime = Date.now();
+            this.showMessage('Game Paused');
+        } else {
+            pauseIcon.textContent = '⏸';
+            pauseLabel.textContent = 'PAUSE';
+            this.pausedTime += Date.now() - this.pauseStartTime;
+            this.showMessage('Game Resumed');
+        }
+        this.saveGame();
+    }
+
+    newGame() {
+        if (confirm('Start a new game? Current progress will be lost.')) {
+            localStorage.removeItem('tamagotchi');
+            location.reload();
+        }
+    }
+
     feed() {
-        if (!this.isAlive) return;
+        if (!this.isAlive || this.isPaused) return;
 
         this.hunger = Math.min(100, this.hunger + 20);
         this.showMessage('Fed TAMA!');
@@ -185,7 +221,7 @@ class Tamagotchi {
     }
 
     play() {
-        if (!this.isAlive) return;
+        if (!this.isAlive || this.isPaused) return;
 
         this.happiness = Math.min(100, this.happiness + 20);
         this.hunger = Math.max(0, this.hunger - 5);
@@ -196,7 +232,7 @@ class Tamagotchi {
     }
 
     clean() {
-        if (!this.isAlive) return;
+        if (!this.isAlive || this.isPaused) return;
 
         if (this.poops.length > 0) {
             this.poops = [];
@@ -211,7 +247,7 @@ class Tamagotchi {
     }
 
     heal() {
-        if (!this.isAlive) return;
+        if (!this.isAlive || this.isPaused) return;
 
         if (this.isSick) {
             this.isSick = false;
@@ -243,7 +279,10 @@ class Tamagotchi {
         document.getElementById('hunger-fill').style.width = this.hunger + '%';
         document.getElementById('happiness-fill').style.width = this.happiness + '%';
         document.getElementById('health-fill').style.width = this.health + '%';
-        document.getElementById('pet-age').textContent = `Age: ${this.age}`;
+
+        const days = Math.floor(this.age / 86400);
+        const hours = Math.floor((this.age % 86400) / 3600);
+        document.getElementById('pet-age').textContent = `Age: ${days}d ${hours}h`;
         document.getElementById('pet-stage').textContent = this.stage.toUpperCase();
     }
 
@@ -540,6 +579,8 @@ class Tamagotchi {
             isSick: this.isSick,
             isAlive: this.isAlive,
             birthTime: this.birthTime,
+            pausedTime: this.pausedTime,
+            isPaused: this.isPaused,
             poops: this.poops,
             lastSave: Date.now()
         };
@@ -550,17 +591,34 @@ class Tamagotchi {
         const saved = localStorage.getItem('tamagotchi');
         if (saved) {
             const data = JSON.parse(saved);
-            const timePassed = Math.floor((Date.now() - data.lastSave) / 1000);
 
-            this.hunger = Math.max(0, data.hunger - timePassed);
-            this.happiness = Math.max(0, data.happiness - (timePassed * 0.5));
-            this.health = Math.max(0, data.health - (timePassed * 0.5));
+            if (!data.isPaused) {
+                const timePassed = Math.floor((Date.now() - data.lastSave) / 1000);
+                this.hunger = Math.max(0, data.hunger - timePassed);
+                this.happiness = Math.max(0, data.happiness - (timePassed * 0.5));
+                this.health = Math.max(0, data.health - (timePassed * 0.5));
+            } else {
+                this.hunger = data.hunger;
+                this.happiness = data.happiness;
+                this.health = data.health;
+            }
+
             this.age = data.age;
             this.stage = data.stage;
             this.isSick = data.isSick;
             this.isAlive = data.isAlive && this.hunger > 0 && this.health > 0;
             this.birthTime = data.birthTime;
+            this.pausedTime = data.pausedTime || 0;
+            this.isPaused = data.isPaused || false;
             this.poops = data.poops || [];
+
+            if (this.isPaused) {
+                this.pauseStartTime = Date.now();
+                const pauseIcon = document.getElementById('pause-icon');
+                const pauseLabel = document.getElementById('pause-label');
+                pauseIcon.textContent = '▶';
+                pauseLabel.textContent = 'RESUME';
+            }
         }
     }
 }
