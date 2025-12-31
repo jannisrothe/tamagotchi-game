@@ -5,8 +5,9 @@
 const canvas = document.createElement('canvas');
 canvas.width = 250;
 canvas.height = 250;
-canvas.className = 'pixel-art';
+canvas.style.imageRendering = 'auto'; // Smooth rendering
 const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = true;
 
 document.getElementById('game-container').appendChild(canvas);
 
@@ -115,6 +116,8 @@ const tama = {
     mouthOpen: false,
     showHeart: false,
     heartTimer: 0,
+    bounce: 0,
+    squish: 1,
 };
 
 // Active objects (food, balls, etc.)
@@ -124,15 +127,9 @@ let activeObjects = [];
 // DRAWING FUNCTIONS
 // ==========================================
 
-function drawPixel(x, y, color, size = 10) {
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y, size, size);
-}
-
 function drawTamagotchi() {
-    const s = 10; // Pixel size
     const cx = tama.x;
-    const cy = tama.y;
+    const cy = tama.y + tama.bounce;
 
     ctx.save();
     ctx.translate(cx, cy);
@@ -140,132 +137,210 @@ function drawTamagotchi() {
         ctx.scale(-1, 1);
     }
 
-    // Colors based on stage
+    // Colors based on stage with gradients
     const colors = {
-        egg: { primary: '#a8d8ea', secondary: '#aa96da', accent: '#fcbad3' },
-        baby: { primary: '#ffb6b9', secondary: '#fae3d9', accent: '#ff6b9d' },
-        child: { primary: '#92e3a9', secondary: '#7ec4cf', accent: '#4ecdc4' },
-        adult: { primary: '#ff9a56', secondary: '#ffcd38', accent: '#ff5e5b' }
+        egg: { primary: '#a8d8ea', secondary: '#aa96da', glow: 'rgba(168, 214, 234, 0.3)' },
+        baby: { primary: '#ffb6b9', secondary: '#fae3d9', glow: 'rgba(255, 182, 185, 0.3)' },
+        child: { primary: '#92e3a9', secondary: '#7ec4cf', glow: 'rgba(146, 227, 169, 0.3)' },
+        adult: { primary: '#ff9a56', secondary: '#ffcd38', glow: 'rgba(255, 154, 86, 0.3)' }
     };
     const c = colors[gameState.stage];
 
     if (gameState.stage === 'egg') {
-        // Egg shape
-        ctx.fillStyle = c.primary;
-        ctx.fillRect(-20, -30, s, s * 6);
-        ctx.fillRect(-10, -40, s * 2, s * 8);
-        ctx.fillRect(10, -30, s, s * 6);
+        // Smooth egg shape with gradient
+        const gradient = ctx.createRadialGradient(0, -10, 5, 0, 0, 35);
+        gradient.addColorStop(0, c.secondary);
+        gradient.addColorStop(1, c.primary);
 
-        ctx.fillStyle = c.secondary;
-        ctx.fillRect(-10, 0, s * 2, s * 2);
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 25, 32, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Glow effect
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = c.glow;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
 
         // Spots
-        ctx.fillStyle = c.accent;
-        ctx.fillRect(-15, -10, s, s);
-        ctx.fillRect(5, -10, s, s);
+        ctx.fillStyle = 'rgba(252, 186, 211, 0.6)';
+        ctx.beginPath();
+        ctx.arc(-8, -5, 4, 0, Math.PI * 2);
+        ctx.arc(6, -8, 3, 0, Math.PI * 2);
+        ctx.arc(-5, 8, 3.5, 0, Math.PI * 2);
+        ctx.fill();
     } else {
-        // Round body
-        ctx.fillStyle = c.primary;
-        ctx.fillRect(-20, -10, s * 4, s * 3);
-        ctx.fillRect(-30, 0, s * 6, s * 2);
-        ctx.fillRect(-20, 20, s * 4, s);
+        // Smooth blob body with squish effect
+        const size = 30;
+        const squishX = tama.squish;
+        const squishY = 1 / tama.squish;
+
+        ctx.scale(squishX, squishY);
+
+        // Body gradient
+        const gradient = ctx.createRadialGradient(0, -5, 5, 0, 0, size);
+        gradient.addColorStop(0, c.secondary);
+        gradient.addColorStop(1, c.primary);
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Glow
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = c.glow;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.scale(1/squishX, 1/squishY);
 
         // Eyes
+        const eyeSize = tama.isBlinking ? 2 : 6;
+        const eyeY = tama.isBlinking ? -8 : -10;
+
+        ctx.fillStyle = '#2d3748';
+        ctx.beginPath();
+        ctx.arc(-10, eyeY, eyeSize, 0, Math.PI * 2);
+        ctx.arc(10, eyeY, eyeSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye shine
         if (!tama.isBlinking) {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(-15, -5, s * 0.8, s * 0.8);
-            ctx.fillRect(5, -5, s * 0.8, s * 0.8);
-        } else {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(-15, -2, s, s * 0.3);
-            ctx.fillRect(5, -2, s, s * 0.3);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            ctx.arc(-8, -12, 2, 0, Math.PI * 2);
+            ctx.arc(12, -12, 2, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         // Dynamic mouth based on mood
         const avgStat = (gameState.hunger + gameState.happiness + gameState.health) / 3;
-        ctx.fillStyle = '#000';
+        ctx.strokeStyle = '#2d3748';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
 
+        ctx.beginPath();
         if (tama.mouthOpen) {
-            // Open mouth (eating)
-            ctx.fillRect(-8, 8, s * 1.6, s * 1.2);
+            // Open mouth (eating) - circle
+            ctx.arc(0, 5, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#1a202c';
+            ctx.fill();
         } else if (avgStat >= 70) {
             // Happy - big smile
-            ctx.fillRect(-10, 10, s * 2, s * 0.6);
-            ctx.fillRect(-12, 11, s * 0.5, s * 0.5);
-            ctx.fillRect(11, 11, s * 0.5, s * 0.5);
+            ctx.arc(0, 0, 15, 0.3, Math.PI - 0.3);
         } else if (avgStat >= 40) {
             // Neutral - small smile
-            ctx.fillRect(-8, 10, s * 1.5, s * 0.5);
+            ctx.arc(0, 5, 10, 0.2, Math.PI - 0.2);
         } else {
             // Sad - frown
-            ctx.fillRect(-10, 12, s * 0.5, s * 0.5);
-            ctx.fillRect(-6, 13, s, s * 0.4);
-            ctx.fillRect(5, 13, s, s * 0.4);
-            ctx.fillRect(9, 12, s * 0.5, s * 0.5);
+            ctx.arc(0, 15, 12, Math.PI + 0.3, Math.PI * 2 - 0.3);
+        }
+        ctx.stroke();
+
+        // Blush when happy
+        if (avgStat >= 70 && !tama.mouthOpen) {
+            ctx.fillStyle = 'rgba(255, 107, 157, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(-18, 2, 5, 3, 0, 0, Math.PI * 2);
+            ctx.ellipse(18, 2, 5, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
 
     ctx.restore();
 
-    // Draw heart speech bubble
+    // Draw smooth heart with particles
     if (tama.showHeart) {
         ctx.save();
         ctx.translate(cx, cy);
 
-        // Speech bubble
+        // Floating animation
+        const floatY = -50 + Math.sin(tama.heartTimer / 20) * 3;
+        ctx.translate(10, floatY);
+
+        // Speech bubble with shadow
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
         ctx.fillStyle = '#fff';
-        ctx.fillRect(-5, -50, 30, 25);
-        ctx.fillRect(-8, -48, 5, 5);
-        ctx.fillRect(-10, -45, 3, 3);
+        ctx.beginPath();
+        ctx.roundRect(-15, -15, 35, 30, 10);
+        ctx.fill();
 
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(-5, -50, 30, 25);
+        // Bubble tail
+        ctx.beginPath();
+        ctx.moveTo(-10, 10);
+        ctx.lineTo(-15, 15);
+        ctx.lineTo(-8, 12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
 
-        // 8-bit heart
+        // Smooth heart
         ctx.fillStyle = '#ff1744';
-        const hx = 5;
-        const hy = -42;
-        const hs = 4;
-        ctx.fillRect(hx - hs, hy, hs, hs);
-        ctx.fillRect(hx + hs, hy, hs, hs);
-        ctx.fillRect(hx - hs*2, hy + hs, hs*4, hs);
-        ctx.fillRect(hx - hs, hy + hs*2, hs*2, hs);
-        ctx.fillRect(hx, hy + hs*3, hs, hs);
+        ctx.beginPath();
+        const heartScale = 0.6 + Math.sin(tama.heartTimer / 10) * 0.1;
+        ctx.scale(heartScale, heartScale);
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-5, -5, -10, -2, -10, 5);
+        ctx.bezierCurveTo(-10, 10, 0, 15, 0, 15);
+        ctx.bezierCurveTo(0, 15, 10, 10, 10, 5);
+        ctx.bezierCurveTo(10, -2, 5, -5, 0, 0);
+        ctx.fill();
+
+        // Heart shine
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.beginPath();
+        ctx.arc(-2, 0, 2, 0, Math.PI * 2);
+        ctx.fill();
 
         ctx.restore();
     }
 }
 
 function drawPoop(poop) {
-    const s = 10;
-    ctx.fillStyle = '#6b5310';
-    ctx.fillRect(poop.x - 7, poop.y, s, s);
-    ctx.fillRect(poop.x + 4, poop.y, s, s);
-    ctx.fillStyle = '#8b6914';
-    ctx.fillRect(poop.x - 3, poop.y - 10, s, s);
+    ctx.save();
+    ctx.translate(poop.x, poop.y);
+
+    // Smooth poop with gradient
+    const gradient = ctx.createRadialGradient(0, -5, 2, 0, 0, 12);
+    gradient.addColorStop(0, '#8b6914');
+    gradient.addColorStop(1, '#6b5310');
+
+    ctx.fillStyle = gradient;
+
+    // Swirl shape
+    ctx.beginPath();
+    ctx.arc(-5, 2, 6, 0, Math.PI * 2);
+    ctx.arc(5, 2, 6, 0, Math.PI * 2);
+    ctx.arc(0, -5, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.beginPath();
+    ctx.ellipse(0, 10, 10, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
 }
 
-function draw8BitEmoji(x, y, type) {
-    const s = 8;
-    ctx.fillStyle = '#FFD700';
-
-    // Yellow circle
-    ctx.fillRect(x - s, y - 2*s, s*2, s*4);
-    ctx.fillRect(x - 2*s, y - s, s*4, s*2);
-
-    ctx.fillStyle = '#000';
-    if (type === 'happy') {
-        ctx.fillRect(x - s, y - s/2, s/2, s/2);
-        ctx.fillRect(x + s/2, y - s/2, s/2, s/2);
-        ctx.fillRect(x - s, y + s, s*2, s/2);
-    } else if (type === 'heart') {
-        ctx.fillStyle = '#ff1744';
-        ctx.fillRect(x - s, y - s/2, s/2, s);
-        ctx.fillRect(x + s/2, y - s/2, s/2, s);
-        ctx.fillRect(x - s*1.5, y, s*3, s*2);
+// Idle bounce animation
+setInterval(() => {
+    if (!gameState.isPaused && gameState.stage !== 'egg') {
+        anime({
+            targets: tama,
+            bounce: [
+                { value: -5, duration: 300, easing: 'easeOutQuad' },
+                { value: 0, duration: 300, easing: 'easeInQuad' }
+            ],
+            duration: 600
+        });
     }
-}
+}, 3000);
 
 // ==========================================
 // ANIMATION LOOP
@@ -427,10 +502,32 @@ function feedTamagotchi() {
         targetY: foodY,
         landed: false,
         draw() {
-            ctx.fillStyle = '#8b4513';
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            // Food gradient (apple/fruit)
+            const gradient = ctx.createRadialGradient(-2, -2, 2, 0, 0, 10);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(1, '#c92a2a');
+
+            ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+            ctx.arc(0, 0, 8, 0, Math.PI * 2);
             ctx.fill();
+
+            // Highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(-3, -3, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 8, 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
         },
         update() {
             if (!this.landed && this.y < this.targetY) {
@@ -453,9 +550,16 @@ function feedTamagotchi() {
                     // Remove food from active objects
                     activeObjects = activeObjects.filter(obj => obj !== food);
 
-                    // First bite - mouth opens
+                    // First bite with squish - mouth opens
                     tama.mouthOpen = true;
                     playSound(sounds.eat);
+                    anime({
+                        targets: tama,
+                        squish: [
+                            { value: 0.9, duration: 150, easing: 'easeOutQuad' },
+                            { value: 1, duration: 150, easing: 'easeInQuad' }
+                        ]
+                    });
 
                     setTimeout(() => {
                         // Close mouth
@@ -464,11 +568,18 @@ function feedTamagotchi() {
                         updateUI();
 
                         setTimeout(() => {
-                            // Second bite - mouth opens again
+                            // Second bite with squish - mouth opens again
                             tama.mouthOpen = true;
                             playSound(sounds.eat);
                             gameState.hunger = Math.min(100, gameState.hunger + 20);
                             updateUI();
+                            anime({
+                                targets: tama,
+                                squish: [
+                                    { value: 0.9, duration: 150, easing: 'easeOutQuad' },
+                                    { value: 1, duration: 150, easing: 'easeInQuad' }
+                                ]
+                            });
 
                             setTimeout(() => {
                                 // Close mouth and show heart
@@ -512,13 +623,39 @@ function playWithTamagotchi() {
         bounceY: 0,
         bounceVelocity: -4,
         draw() {
-            ctx.fillStyle = '#fff';
-            ctx.strokeStyle = '#000';
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            // Ball gradient
+            const gradient = ctx.createRadialGradient(-2, -2, 2, 0, 0, 10);
+            gradient.addColorStop(0, '#fff');
+            gradient.addColorStop(1, '#e0e0e0');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ball highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.arc(-3, -3, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ball stripes
+            ctx.strokeStyle = '#4ECDC4';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.arc(0, 0, 5, 0, Math.PI);
             ctx.stroke();
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 8, 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
         },
         update() {
             if (!this.landed && this.y < this.targetY) {
