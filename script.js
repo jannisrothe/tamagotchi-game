@@ -8,18 +8,43 @@ let k;
 function initKaboom() {
     const container = document.getElementById('game-container');
 
-    k = kaboom({
-        global: false,
-        width: 300,
-        height: 300,
-        background: [200, 230, 201], // Light green background
-        crisp: true, // Pixel-perfect rendering
-    });
+    if (!container) {
+        console.error('Game container not found!');
+        return null;
+    }
 
-    // Append Kaboom canvas to container
-    container.appendChild(k.canvas);
+    if (typeof kaboom === 'undefined') {
+        console.error('Kaboom library not loaded!');
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: red;">Kaboom library failed to load. Please refresh.</div>';
+        return null;
+    }
 
-    return k;
+    try {
+        k = kaboom({
+            global: false,
+            width: 300,
+            height: 300,
+            background: [200, 230, 201], // Light green background
+            crisp: true, // Pixel-perfect rendering
+        });
+
+        // Style the canvas
+        k.canvas.style.display = 'block';
+        k.canvas.style.imageRendering = 'pixelated';
+        k.canvas.style.imageRendering = 'crisp-edges';
+
+        // Clear container and append canvas
+        container.innerHTML = '';
+        container.appendChild(k.canvas);
+
+        console.log('Kaboom initialized successfully');
+        return k;
+    } catch (error) {
+        console.error('Failed to initialize Kaboom:', error);
+        // Fallback message
+        container.innerHTML = '<div style="padding: 20px; text-align: center;">Failed to load game. Please refresh the page.</div>';
+        return null;
+    }
 }
 
 // ==========================================
@@ -712,7 +737,15 @@ if (document.readyState === 'loading') {
 }
 
 function startGame() {
-    initKaboom();
+    console.log('Starting game...');
+
+    const kaboomReady = initKaboom();
+
+    if (!kaboomReady) {
+        console.error('Kaboom failed to initialize');
+        return;
+    }
+
     setupButtonHandlers();
     loadGame();
 }
