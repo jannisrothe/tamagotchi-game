@@ -46,26 +46,26 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-[#d4e8e8] to-[#e8f5e9] min-h-screen flex items-center justify-center font-mono p-3">
+<body class="bg-gradient-to-br from-[#d4e8e8] to-[#e8f5e9] min-h-screen flex items-center justify-center font-mono p-2">
     <div class="w-full max-w-lg">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-[#4ECDC4] to-[#6ee7b7] text-black p-3 mb-4 rounded-2xl toy-shadow-lg border-2 border-white/50">
-            <h1 class="text-2xl font-bold uppercase text-center tracking-tight">TAMAGOTCHI</h1>
-            <p class="text-center text-[10px] mt-0.5 tracking-wide opacity-80">VIRTUAL PET SIMULATOR</p>
+        <div class="bg-gradient-to-r from-[#4ECDC4] to-[#6ee7b7] text-black p-2 mb-2 rounded-2xl toy-shadow-lg border-2 border-white/50">
+            <h1 class="text-xl font-bold uppercase text-center tracking-tight">TAMAGOTCHI</h1>
+            <p class="text-center text-[9px] mt-0.5 tracking-wide opacity-80">VIRTUAL PET SIMULATOR</p>
         </div>
 
         <!-- Game Container -->
         <div class="bg-gradient-to-br from-[#C8E6C9] to-[#a8d5ba] rounded-3xl toy-shadow-lg border-4 border-white/60 overflow-hidden">
             <!-- Screen -->
-            <div class="p-3">
+            <div class="p-2">
                 <!-- Sleep indicator -->
-                <div id="sleep-indicator" class="hidden bg-gradient-to-r from-[#1a1a2e] to-[#16213e] text-white text-center py-1 px-3 mb-2 text-[10px] font-bold uppercase rounded-full toy-shadow-sm">
+                <div id="sleep-indicator" class="hidden bg-gradient-to-r from-[#1a1a2e] to-[#16213e] text-white text-center py-0.5 px-2 mb-1.5 text-[9px] font-bold uppercase rounded-full toy-shadow-sm">
                     <span class="mr-1">🌙</span>
                     <span id="sleep-text">SLEEPING (10PM - 8AM)</span>
                 </div>
 
                 <!-- Status Bar -->
-                <div class="flex justify-around mb-2 p-2 bg-white/80 backdrop-blur rounded-2xl toy-shadow-inner">
+                <div class="flex justify-around mb-1.5 p-1.5 bg-white/80 backdrop-blur rounded-2xl toy-shadow-inner">
                     <div class="flex flex-col items-center gap-1">
                         <span class="text-xs font-bold">♥</span>
                         <div class="w-14 h-2.5 rounded-full bg-gray-200 overflow-hidden">
@@ -87,42 +87,42 @@
                 </div>
 
                 <!-- Pet Area -->
-                <div class="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur rounded-3xl toy-shadow-inner p-2 flex flex-col items-center justify-center gap-1.5">
+                <div class="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur rounded-3xl toy-shadow-inner p-1.5 flex flex-col items-center justify-center gap-1">
                     <div id="game-container" class="rounded-xl overflow-hidden"></div>
-                    <div class="text-center font-bold pb-1">
-                        <p id="pet-name" class="text-sm text-black uppercase tracking-wider">TAMA</p>
-                        <p id="pet-age" class="text-[9px] text-gray-600">AGE: 0d 0h 0m</p>
-                        <p id="pet-stage" class="text-[9px] text-gray-600">EGG</p>
+                    <div class="text-center font-bold pb-0.5">
+                        <p id="pet-name" class="text-xs text-black uppercase tracking-wider">TAMA</p>
+                        <p id="pet-age" class="text-[8px] text-gray-600">AGE: 0d 0h 0m</p>
+                        <p id="pet-stage" class="text-[8px] text-gray-600">EGG</p>
                     </div>
                 </div>
 
                 <!-- Status Message -->
-                <div id="status-message" class="mt-2 p-2 bg-white/80 backdrop-blur rounded-2xl toy-shadow-sm min-h-[28px] text-center text-[10px] font-bold uppercase tracking-wide"></div>
+                <div id="status-message" class="mt-1.5 p-1.5 bg-white/80 backdrop-blur rounded-2xl toy-shadow-sm min-h-[24px] text-center text-[9px] font-bold uppercase tracking-wide"></div>
             </div>
 
             <!-- Game Controls -->
-            <div class="flex gap-2 p-2 justify-center">
-                <button id="pause-btn" class="bg-gradient-to-br from-[#2d3748] to-[#1a202c] text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide rounded-full toy-shadow hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5">
+            <div class="flex gap-1.5 p-1.5 justify-center">
+                <button id="pause-btn" class="bg-gradient-to-br from-[#2d3748] to-[#1a202c] text-white px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded-full toy-shadow hover:scale-105 active:scale-95 transition-all flex items-center gap-1">
                     <span id="pause-icon">⏸</span>
                     <span id="pause-label">PAUSE</span>
                 </button>
-                <button id="new-game-btn" class="bg-gradient-to-br from-[#2d3748] to-[#1a202c] text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide rounded-full toy-shadow hover:scale-105 active:scale-95 transition-all">
+                <button id="new-game-btn" class="bg-gradient-to-br from-[#2d3748] to-[#1a202c] text-white px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded-full toy-shadow hover:scale-105 active:scale-95 transition-all">
                     <span>NEW GAME</span>
                 </button>
             </div>
 
             <!-- Action Buttons -->
-            <div class="grid grid-cols-2 gap-2 p-2 pb-3">
-                <button id="feed-btn" class="bg-gradient-to-br from-white to-gray-50 border-2 border-white/50 p-2.5 font-bold rounded-2xl toy-shadow hover:scale-105 active:scale-95 transition-all text-[11px] uppercase tracking-wide text-gray-800">
+            <div class="grid grid-cols-2 gap-1.5 p-1.5 pb-2">
+                <button id="feed-btn" class="bg-gradient-to-br from-white to-gray-50 border-2 border-white/50 p-2 font-bold rounded-2xl toy-shadow hover:scale-105 active:scale-95 transition-all text-[10px] uppercase tracking-wide text-gray-800">
                     FEED
                 </button>
-                <button id="play-btn" class="bg-gradient-to-br from-white to-gray-50 border-2 border-white/50 p-2.5 font-bold rounded-2xl toy-shadow hover:scale-105 active:scale-95 transition-all text-[11px] uppercase tracking-wide text-gray-800">
+                <button id="play-btn" class="bg-gradient-to-br from-white to-gray-50 border-2 border-white/50 p-2 font-bold rounded-2xl toy-shadow hover:scale-105 active:scale-95 transition-all text-[10px] uppercase tracking-wide text-gray-800">
                     PLAY
                 </button>
-                <button id="clean-btn" class="bg-gradient-to-br from-white to-gray-50 border-2 border-white/50 p-2.5 font-bold rounded-2xl toy-shadow hover:scale-105 active:scale-95 transition-all text-[11px] uppercase tracking-wide text-gray-800">
+                <button id="clean-btn" class="bg-gradient-to-br from-white to-gray-50 border-2 border-white/50 p-2 font-bold rounded-2xl toy-shadow hover:scale-105 active:scale-95 transition-all text-[10px] uppercase tracking-wide text-gray-800">
                     CLEAN
                 </button>
-                <button id="medicine-btn" class="bg-gradient-to-br from-white to-gray-50 border-2 border-white/50 p-2.5 font-bold rounded-2xl toy-shadow hover:scale-105 active:scale-95 transition-all text-[11px] uppercase tracking-wide text-gray-800">
+                <button id="medicine-btn" class="bg-gradient-to-br from-white to-gray-50 border-2 border-white/50 p-2 font-bold rounded-2xl toy-shadow hover:scale-105 active:scale-95 transition-all text-[10px] uppercase tracking-wide text-gray-800">
                     HEAL
                 </button>
             </div>

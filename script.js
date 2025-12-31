@@ -3,8 +3,8 @@
 // ==========================================
 
 const canvas = document.createElement('canvas');
-canvas.width = 300;
-canvas.height = 300;
+canvas.width = 250;
+canvas.height = 250;
 canvas.className = 'pixel-art';
 const ctx = canvas.getContext('2d');
 
@@ -105,10 +105,10 @@ const gameState = {
 
 // Tamagotchi sprite
 const tama = {
-    x: 150,
-    y: 150,
-    targetX: 150,
-    targetY: 150,
+    x: 125,
+    y: 125,
+    targetX: 125,
+    targetY: 125,
     frame: 0,
     facingRight: true,
     isBlinking: false,
@@ -237,8 +237,8 @@ function animate(currentTime) {
         if (obj.draw) obj.draw();
     });
 
-    // Update Tamagotchi movement
-    if (!gameState.isInteracting && !gameState.isPaused && gameState.stage !== 'egg') {
+    // Update Tamagotchi movement (allow movement during interactions)
+    if (!gameState.isPaused && gameState.stage !== 'egg') {
         const dx = tama.targetX - tama.x;
         const dy = tama.targetY - tama.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -270,8 +270,8 @@ requestAnimationFrame(animate);
 // Random movement
 setInterval(() => {
     if (!gameState.isInteracting && !gameState.isPaused && gameState.stage !== 'egg') {
-        tama.targetX = 60 + Math.random() * 180;
-        tama.targetY = 100 + Math.random() * 150;
+        tama.targetX = 50 + Math.random() * 150;
+        tama.targetY = 80 + Math.random() * 120;
     }
 }, 3000);
 
@@ -289,8 +289,8 @@ setInterval(() => {
 setInterval(() => {
     if (!gameState.isPaused && gameState.stage !== 'egg' && gameState.poops.length < 3 && Math.random() < 0.4) {
         gameState.poops.push({
-            x: 60 + Math.random() * 180,
-            y: 230 + Math.random() * 50
+            x: 50 + Math.random() * 150,
+            y: 190 + Math.random() * 40
         });
     }
 }, 15000);
@@ -358,8 +358,8 @@ function feedTamagotchi() {
     playSound(sounds.click);
     showMessage(`Fed ${gameState.petName}!`);
 
-    const foodX = 80 + Math.random() * 140;
-    const foodY = 240;
+    const foodX = 70 + Math.random() * 110;
+    const foodY = 200;
 
     // Create food object
     const food = {
@@ -425,8 +425,8 @@ function playWithTamagotchi() {
     playSound(sounds.click);
     showMessage(`Played with ${gameState.petName}!`);
 
-    const ballX = 80 + Math.random() * 140;
-    const ballY = 240;
+    const ballX = 70 + Math.random() * 110;
+    const ballY = 200;
 
     // Create ball object
     const ball = {
