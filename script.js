@@ -1,51 +1,14 @@
 // ==========================================
-// TAMAGOTCHI GAME - Kaboom.js + jsfxr + TinyMusic
+// TAMAGOTCHI GAME - Vanilla Canvas + Sound
 // ==========================================
 
-// Initialize Kaboom after DOM is ready
-let k;
+const canvas = document.createElement('canvas');
+canvas.width = 300;
+canvas.height = 300;
+canvas.className = 'pixel-art';
+const ctx = canvas.getContext('2d');
 
-function initKaboom() {
-    const container = document.getElementById('game-container');
-
-    if (!container) {
-        console.error('Game container not found!');
-        return null;
-    }
-
-    if (typeof kaboom === 'undefined') {
-        console.error('Kaboom library not loaded!');
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: red;">Kaboom library failed to load. Please refresh.</div>';
-        return null;
-    }
-
-    try {
-        k = kaboom({
-            global: false,
-            width: 300,
-            height: 300,
-            background: [200, 230, 201], // Light green background
-            crisp: true, // Pixel-perfect rendering
-        });
-
-        // Style the canvas
-        k.canvas.style.display = 'block';
-        k.canvas.style.imageRendering = 'pixelated';
-        k.canvas.style.imageRendering = 'crisp-edges';
-
-        // Clear container and append canvas
-        container.innerHTML = '';
-        container.appendChild(k.canvas);
-
-        console.log('Kaboom initialized successfully');
-        return k;
-    } catch (error) {
-        console.error('Failed to initialize Kaboom:', error);
-        // Fallback message
-        container.innerHTML = '<div style="padding: 20px; text-align: center;">Failed to load game. Please refresh the page.</div>';
-        return null;
-    }
-}
+document.getElementById('game-container').appendChild(canvas);
 
 // ==========================================
 // SOUND EFFECTS (jsfxr)
@@ -61,8 +24,10 @@ const sounds = {
 
 function playSound(soundArray) {
     try {
-        const audio = jsfxr(soundArray);
-        audio.play();
+        if (typeof jsfxr !== 'undefined') {
+            const audio = jsfxr(soundArray);
+            audio.play();
+        }
     } catch(e) {
         console.log('Sound play failed:', e);
     }
@@ -72,10 +37,11 @@ function playSound(soundArray) {
 // BACKGROUND MUSIC (TinyMusic)
 // ==========================================
 let bgMusic = null;
+let musicStarted = false;
 
 function initMusic() {
     try {
-        if (typeof TinyMusic !== 'undefined') {
+        if (typeof TinyMusic !== 'undefined' && !musicStarted) {
             const tempo = 120;
             const sequence = new TinyMusic.Sequence(null, tempo, [
                 'C4 q', 'E4 q', 'G4 q', 'E4 q',
@@ -88,18 +54,17 @@ function initMusic() {
             bgMusic.loop = true;
             bgMusic.add(sequence);
             bgMusic.play();
+            musicStarted = true;
         }
     } catch(e) {
         console.log('Music init failed:', e);
     }
 }
 
-// Start music after user interaction
-let musicStarted = false;
+// Start music on first user interaction
 document.addEventListener('click', () => {
     if (!musicStarted) {
         initMusic();
-        musicStarted = true;
     }
 }, { once: true });
 
@@ -124,441 +89,444 @@ const gameState = {
     poops: [],
 };
 
-// ==========================================
-// SPRITE DEFINITIONS (Pixel Art)
-// ==========================================
-
-// Define colors for each stage
-const colors = {
-    egg: { primary: [168, 216, 234], secondary: [170, 150, 218], accent: [252, 186, 211] },
-    baby: { primary: [255, 182, 185], secondary: [250, 227, 217], accent: [255, 107, 157] },
-    child: { primary: [146, 227, 169], secondary: [126, 196, 207], accent: [78, 205, 196] },
-    adult: { primary: [255, 154, 86], secondary: [255, 205, 56], accent: [255, 94, 91] }
+// Tamagotchi sprite
+const tama = {
+    x: 150,
+    y: 150,
+    targetX: 150,
+    targetY: 150,
+    frame: 0,
+    facingRight: true,
+    isBlinking: false,
 };
 
-// Draw pixel art Tamagotchi
-function drawTamagotchi(stage, frame, isBlinking) {
-    const size = 10; // Pixel size
-    const c = colors[stage];
+// Active objects (food, balls, etc.)
+let activeObjects = [];
 
-    k.pushTransform();
-    k.pushTranslate(k.vec2(-50, -50)); // Center the sprite
+// ==========================================
+// DRAWING FUNCTIONS
+// ==========================================
 
-    // Draw based on stage
-    if (stage === 'egg') {
-        // Oval egg shape
-        for (let dy = -12; dy <= 12; dy += size) {
-            for (let dx = -10; dx <= 10; dx += size) {
-                const dist = Math.sqrt((dx/10) * (dx/10) + (dy/14) * (dy/14));
-                if (dist < 1.2) {
-                    const color = dy < 0 ? c.primary : c.secondary;
-                    k.drawRect({
-                        pos: k.vec2(dx, dy),
-                        width: size,
-                        height: size,
-                        color: k.rgb(color[0], color[1], color[2]),
-                    });
-                }
-            }
-        }
+function drawPixel(x, y, color, size = 10) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, size, size);
+}
+
+function drawTamagotchi() {
+    const s = 10; // Pixel size
+    const cx = tama.x;
+    const cy = tama.y;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    if (!tama.facingRight) {
+        ctx.scale(-1, 1);
+    }
+
+    // Colors based on stage
+    const colors = {
+        egg: { primary: '#a8d8ea', secondary: '#aa96da', accent: '#fcbad3' },
+        baby: { primary: '#ffb6b9', secondary: '#fae3d9', accent: '#ff6b9d' },
+        child: { primary: '#92e3a9', secondary: '#7ec4cf', accent: '#4ecdc4' },
+        adult: { primary: '#ff9a56', secondary: '#ffcd38', accent: '#ff5e5b' }
+    };
+    const c = colors[gameState.stage];
+
+    if (gameState.stage === 'egg') {
+        // Egg shape
+        ctx.fillStyle = c.primary;
+        ctx.fillRect(-20, -30, s, s * 6);
+        ctx.fillRect(-10, -40, s * 2, s * 8);
+        ctx.fillRect(10, -30, s, s * 6);
+
+        ctx.fillStyle = c.secondary;
+        ctx.fillRect(-10, 0, s * 2, s * 2);
+
         // Spots
-        k.drawRect({ pos: k.vec2(-6*size/10, -4*size/10), width: size, height: size, color: k.rgb(c.accent[0], c.accent[1], c.accent[2]) });
-        k.drawRect({ pos: k.vec2(-2*size/10, -4*size/10), width: size, height: size, color: k.rgb(c.accent[0], c.accent[1], c.accent[2]) });
+        ctx.fillStyle = c.accent;
+        ctx.fillRect(-15, -10, s, s);
+        ctx.fillRect(5, -10, s, s);
     } else {
         // Round body
-        for (let dy = -12; dy <= 12; dy += size) {
-            for (let dx = -12; dx <= 12; dx += size) {
-                const dist = Math.sqrt(dx * dx + dy * dy) / size;
-                if (dist < 2.5) {
-                    k.drawRect({
-                        pos: k.vec2(dx, dy),
-                        width: size,
-                        height: size,
-                        color: k.rgb(c.primary[0], c.primary[1], c.primary[2]),
-                    });
-                }
-            }
-        }
+        ctx.fillStyle = c.primary;
+        ctx.fillRect(-20, -10, s * 4, s * 3);
+        ctx.fillRect(-30, 0, s * 6, s * 2);
+        ctx.fillRect(-20, 20, s * 4, s);
 
         // Eyes
-        if (!isBlinking) {
-            k.drawRect({ pos: k.vec2(-size, -size), width: size*0.8, height: size*0.8, color: k.BLACK });
-            k.drawRect({ pos: k.vec2(size*0.3, -size), width: size*0.8, height: size*0.8, color: k.BLACK });
+        if (!tama.isBlinking) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(-15, -5, s * 0.8, s * 0.8);
+            ctx.fillRect(5, -5, s * 0.8, s * 0.8);
         } else {
-            k.drawRect({ pos: k.vec2(-size, -size*0.3), width: size, height: size*0.3, color: k.BLACK });
-            k.drawRect({ pos: k.vec2(size*0.3, -size*0.3), width: size, height: size*0.3, color: k.BLACK });
+            ctx.fillStyle = '#000';
+            ctx.fillRect(-15, -2, s, s * 0.3);
+            ctx.fillRect(5, -2, s, s * 0.3);
         }
 
         // Smile
-        k.drawRect({ pos: k.vec2(-size, size), width: size*3, height: size*0.6, color: k.BLACK });
+        ctx.fillStyle = '#000';
+        ctx.fillRect(-10, 10, s * 2, s * 0.6);
     }
 
-    k.popTransform();
+    ctx.restore();
+}
+
+function drawPoop(poop) {
+    const s = 10;
+    ctx.fillStyle = '#6b5310';
+    ctx.fillRect(poop.x - 7, poop.y, s, s);
+    ctx.fillRect(poop.x + 4, poop.y, s, s);
+    ctx.fillStyle = '#8b6914';
+    ctx.fillRect(poop.x - 3, poop.y - 10, s, s);
+}
+
+function draw8BitEmoji(x, y, type) {
+    const s = 8;
+    ctx.fillStyle = '#FFD700';
+
+    // Yellow circle
+    ctx.fillRect(x - s, y - 2*s, s*2, s*4);
+    ctx.fillRect(x - 2*s, y - s, s*4, s*2);
+
+    ctx.fillStyle = '#000';
+    if (type === 'happy') {
+        ctx.fillRect(x - s, y - s/2, s/2, s/2);
+        ctx.fillRect(x + s/2, y - s/2, s/2, s/2);
+        ctx.fillRect(x - s, y + s, s*2, s/2);
+    } else if (type === 'heart') {
+        ctx.fillStyle = '#ff1744';
+        ctx.fillRect(x - s, y - s/2, s/2, s);
+        ctx.fillRect(x + s/2, y - s/2, s/2, s);
+        ctx.fillRect(x - s*1.5, y, s*3, s*2);
+    }
 }
 
 // ==========================================
-// GAME OBJECT: TAMAGOTCHI
+// ANIMATION LOOP
 // ==========================================
 
-k.scene("game", () => {
-    // Add Tamagotchi sprite
-    const tama = k.add([
-        k.pos(150, 150),
-        k.anchor("center"),
-        {
-            frame: 0,
-            isBlinking: false,
-            targetPos: k.vec2(150, 150),
-            facingRight: true,
+let animationFrame = 0;
+let lastTime = 0;
 
-            draw() {
-                k.pushTransform();
-                k.pushTranslate(this.pos);
-                if (!this.facingRight) {
-                    k.pushScale(k.vec2(-1, 1));
-                }
-                drawTamagotchi(gameState.stage, this.frame, this.isBlinking);
-                k.popTransform();
-            },
+function animate(currentTime) {
+    const deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
 
-            update() {
-                // Animation frame
-                this.frame = (this.frame + 0.05) % 4;
+    // Clear canvas
+    ctx.fillStyle = '#c8e6c9';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Movement (only when not interacting)
-                if (!gameState.isInteracting && !gameState.isPaused && gameState.stage !== 'egg') {
-                    const dx = this.targetPos.x - this.pos.x;
-                    const dy = this.targetPos.y - this.pos.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist > 1) {
-                        const speed = 0.5;
-                        this.pos.x += (dx / dist) * speed;
-                        this.pos.y += (dy / dist) * speed;
-                        this.facingRight = dx > 0;
-                    }
-                }
-            }
-        }
-    ]);
-
-    // Random movement timer
-    k.loop(3, () => {
-        if (!gameState.isInteracting && !gameState.isPaused && gameState.stage !== 'egg') {
-            tama.targetPos = k.vec2(
-                60 + Math.random() * 180,
-                100 + Math.random() * 150
-            );
-        }
+    // Update and draw active objects (food, balls)
+    activeObjects.forEach(obj => {
+        if (obj.update) obj.update();
+        if (obj.draw) obj.draw();
     });
 
-    // Random blink
-    k.loop(2, () => {
-        if (gameState.stage !== 'egg' && !gameState.isPaused) {
-            tama.isBlinking = true;
-            k.wait(0.2, () => {
-                tama.isBlinking = false;
-            });
-        }
-    });
+    // Update Tamagotchi movement
+    if (!gameState.isInteracting && !gameState.isPaused && gameState.stage !== 'egg') {
+        const dx = tama.targetX - tama.x;
+        const dy = tama.targetY - tama.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-    // Poop sprites
-    const poops = [];
-
-    k.loop(15, () => {
-        if (!gameState.isPaused && gameState.stage !== 'egg' && poops.length < 3 && Math.random() < 0.4) {
-            const poop = k.add([
-                k.pos(60 + Math.random() * 180, 230 + Math.random() * 50),
-                k.anchor("center"),
-                {
-                    draw() {
-                        const s = 10;
-                        k.pushTransform();
-                        k.pushTranslate(this.pos);
-                        k.drawRect({ pos: k.vec2(-7, 0), width: s, height: s, color: k.rgb(107, 83, 16) });
-                        k.drawRect({ pos: k.vec2(4, 0), width: s, height: s, color: k.rgb(107, 83, 16) });
-                        k.drawRect({ pos: k.vec2(-3, -10), width: s, height: s, color: k.rgb(139, 105, 20) });
-                        k.popTransform();
-                    }
-                }
-            ]);
-            poops.push(poop);
-            gameState.poops.push(poop);
-        }
-    });
-
-    // Game loop - stats degradation
-    k.loop(1, () => {
-        if (gameState.isPaused || !gameState.isAlive || gameState.isSleeping) return;
-
-        gameState.hunger = Math.max(0, gameState.hunger - 0.2);
-        gameState.happiness = Math.max(0, gameState.happiness - 0.1);
-
-        if (poops.length > 0) {
-            gameState.health = Math.max(0, gameState.health - 0.5);
-        }
-
-        if (gameState.hunger < 30 || gameState.happiness < 30) {
-            gameState.health = Math.max(0, gameState.health - 0.1);
-        }
-
-        if (gameState.health < 30 && !gameState.isSick) {
-            gameState.isSick = true;
-        }
-
-        if ((gameState.hunger === 0 || gameState.health === 0) &&
-            gameState.stage !== 'egg' && gameState.stage !== 'baby') {
-            gameState.isAlive = false;
-        }
-
-        updateUI();
-        saveGame();
-    });
-
-    // Age update
-    k.loop(1, () => {
-        if (gameState.isPaused || !gameState.isAlive) return;
-
-        const ageInSeconds = Math.floor((Date.now() - gameState.birthTime - gameState.pausedTime) / 1000);
-        gameState.age = ageInSeconds;
-
-        if (gameState.stage === 'egg' && ageInSeconds >= 300) {
-            evolve('baby');
-        } else if (gameState.stage === 'baby' && ageInSeconds >= 3900) {
-            evolve('child');
-        } else if (gameState.stage === 'child' && ageInSeconds >= 25200) {
-            evolve('adult');
-        }
-
-        updateUI();
-    });
-
-    // Evolution function
-    function evolve(newStage) {
-        gameState.stage = newStage;
-        playSound(sounds.evolve);
-        showMessage(`${gameState.petName} evolved to ${newStage.toUpperCase()}!`);
-
-        // Particle effect
-        for (let i = 0; i < 10; i++) {
-            k.add([
-                k.pos(tama.pos.x + (Math.random() - 0.5) * 100, tama.pos.y - 30),
-                k.opacity(1),
-                {
-                    vy: -2 - Math.random() * 2,
-                    life: 2,
-                    update() {
-                        this.pos.y += this.vy;
-                        this.vy += 0.1;
-                        this.life -= k.dt();
-                        this.opacity = this.life / 2;
-                        if (this.life <= 0) this.destroy();
-                    },
-                    draw() {
-                        k.pushTransform();
-                        k.pushTranslate(this.pos);
-                        k.drawRect({ pos: k.vec2(-3, -3), width: 6, height: 6, color: k.rgb(255, 215, 0) });
-                        k.popTransform();
-                    }
-                }
-            ]);
+        if (dist > 1) {
+            const speed = 0.5;
+            tama.x += (dx / dist) * speed;
+            tama.y += (dy / dist) * speed;
+            tama.facingRight = dx > 0;
         }
     }
 
-    // Feed interaction
-    window.feedTamagotchi = () => {
-        if (!gameState.isAlive || gameState.isPaused || gameState.isSleeping || gameState.isInteracting) return;
+    // Draw poops
+    gameState.poops.forEach(poop => drawPoop(poop));
 
-        gameState.isInteracting = true;
-        playSound(sounds.click);
-        showMessage(`Fed ${gameState.petName}!`);
+    // Draw Tamagotchi
+    drawTamagotchi();
 
-        const foodX = 80 + Math.random() * 140;
-        const foodY = 240;
+    animationFrame++;
+    requestAnimationFrame(animate);
+}
 
-        // Drop food
-        const food = k.add([
-            k.pos(foodX, -10),
-            k.anchor("center"),
-            {
-                targetY: foodY,
-                vy: 1.5,
-                update() {
-                    if (this.pos.y < this.targetY) {
-                        this.pos.y += this.vy;
-                    }
-                },
-                draw() {
-                    k.pushTransform();
-                    k.pushTranslate(this.pos);
-                    k.drawCircle({ pos: k.vec2(0, 0), radius: 8, color: k.rgb(139, 69, 19) });
-                    k.popTransform();
-                }
+requestAnimationFrame(animate);
+
+// ==========================================
+// GAME TIMERS
+// ==========================================
+
+// Random movement
+setInterval(() => {
+    if (!gameState.isInteracting && !gameState.isPaused && gameState.stage !== 'egg') {
+        tama.targetX = 60 + Math.random() * 180;
+        tama.targetY = 100 + Math.random() * 150;
+    }
+}, 3000);
+
+// Random blink
+setInterval(() => {
+    if (gameState.stage !== 'egg' && !gameState.isPaused) {
+        tama.isBlinking = true;
+        setTimeout(() => {
+            tama.isBlinking = false;
+        }, 200);
+    }
+}, 2000);
+
+// Poop generation
+setInterval(() => {
+    if (!gameState.isPaused && gameState.stage !== 'egg' && gameState.poops.length < 3 && Math.random() < 0.4) {
+        gameState.poops.push({
+            x: 60 + Math.random() * 180,
+            y: 230 + Math.random() * 50
+        });
+    }
+}, 15000);
+
+// Stats degradation
+setInterval(() => {
+    if (gameState.isPaused || !gameState.isAlive || gameState.isSleeping) return;
+
+    gameState.hunger = Math.max(0, gameState.hunger - 0.2);
+    gameState.happiness = Math.max(0, gameState.happiness - 0.1);
+
+    if (gameState.poops.length > 0) {
+        gameState.health = Math.max(0, gameState.health - 0.5);
+    }
+
+    if (gameState.hunger < 30 || gameState.happiness < 30) {
+        gameState.health = Math.max(0, gameState.health - 0.1);
+    }
+
+    if (gameState.health < 30 && !gameState.isSick) {
+        gameState.isSick = true;
+    }
+
+    if ((gameState.hunger === 0 || gameState.health === 0) &&
+        gameState.stage !== 'egg' && gameState.stage !== 'baby') {
+        gameState.isAlive = false;
+    }
+
+    updateUI();
+    saveGame();
+}, 1000);
+
+// Age update
+setInterval(() => {
+    if (gameState.isPaused || !gameState.isAlive) return;
+
+    const ageInSeconds = Math.floor((Date.now() - gameState.birthTime - gameState.pausedTime) / 1000);
+    gameState.age = ageInSeconds;
+
+    if (gameState.stage === 'egg' && ageInSeconds >= 300) {
+        evolve('baby');
+    } else if (gameState.stage === 'baby' && ageInSeconds >= 3900) {
+        evolve('child');
+    } else if (gameState.stage === 'child' && ageInSeconds >= 25200) {
+        evolve('adult');
+    }
+
+    updateUI();
+}, 1000);
+
+function evolve(newStage) {
+    gameState.stage = newStage;
+    playSound(sounds.evolve);
+    showMessage(`${gameState.petName} evolved to ${newStage.toUpperCase()}!`);
+}
+
+// ==========================================
+// INTERACTION FUNCTIONS
+// ==========================================
+
+function feedTamagotchi() {
+    if (!gameState.isAlive || gameState.isPaused || gameState.isSleeping || gameState.isInteracting) return;
+
+    gameState.isInteracting = true;
+    playSound(sounds.click);
+    showMessage(`Fed ${gameState.petName}!`);
+
+    const foodX = 80 + Math.random() * 140;
+    const foodY = 240;
+
+    // Create food object
+    const food = {
+        x: foodX,
+        y: -10,
+        targetY: foodY,
+        landed: false,
+        draw() {
+            ctx.fillStyle = '#8b4513';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+        },
+        update() {
+            if (!this.landed && this.y < this.targetY) {
+                this.y += 2;
+            } else if (!this.landed) {
+                this.landed = true;
+                // Move Tamagotchi to food
+                tama.targetX = foodX;
+                tama.targetY = foodY - 20;
             }
-        ]);
 
-        // Wait for food to land, then Tamagotchi walks to it
-        k.wait(2, () => {
-            tama.targetPos = k.vec2(foodX, foodY - 20);
-
-            // Check when Tamagotchi reaches food
-            const checkArrival = k.loop(0.1, () => {
+            // Check if Tamagotchi reached food
+            if (this.landed) {
                 const dist = Math.sqrt(
-                    Math.pow(tama.pos.x - foodX, 2) +
-                    Math.pow(tama.pos.y - (foodY - 20), 2)
+                    Math.pow(tama.x - foodX, 2) +
+                    Math.pow(tama.y - (foodY - 20), 2)
                 );
 
                 if (dist < 10) {
-                    checkArrival.cancel();
-                    food.destroy();
+                    // Remove food from active objects
+                    activeObjects = activeObjects.filter(obj => obj !== food);
                     playSound(sounds.eat);
 
-                    // Eating animation
-                    k.wait(0.4, () => {
+                    setTimeout(() => {
                         gameState.hunger = Math.min(100, gameState.hunger + 20);
                         updateUI();
 
-                        k.wait(0.6, () => {
+                        setTimeout(() => {
                             gameState.hunger = Math.min(100, gameState.hunger + 20);
                             playSound(sounds.eat);
                             updateUI();
 
-                            k.wait(1, () => {
+                            setTimeout(() => {
                                 gameState.isInteracting = false;
                                 saveGame();
-                            });
-                        });
-                    });
-                }
-            });
-        });
-    };
-
-    // Play interaction
-    window.playWithTamagotchi = () => {
-        if (!gameState.isAlive || gameState.isPaused || gameState.isSleeping || gameState.isInteracting) return;
-
-        gameState.isInteracting = true;
-        playSound(sounds.click);
-        showMessage(`Played with ${gameState.petName}!`);
-
-        const ballX = 80 + Math.random() * 140;
-        const ballY = 240;
-
-        // Drop ball
-        const ball = k.add([
-            k.pos(ballX, -10),
-            k.anchor("center"),
-            {
-                targetY: ballY,
-                vy: 1.5,
-                update() {
-                    if (this.pos.y < this.targetY) {
-                        this.pos.y += this.vy;
-                    }
-                },
-                draw() {
-                    k.pushTransform();
-                    k.pushTranslate(this.pos);
-                    k.drawCircle({ pos: k.vec2(0, 0), radius: 8, color: k.WHITE, outline: { color: k.BLACK, width: 2 } });
-                    k.popTransform();
+                            }, 1000);
+                        }, 600);
+                    }, 400);
                 }
             }
-        ]);
+        }
+    };
 
-        k.wait(2, () => {
-            tama.targetPos = k.vec2(ballX, ballY - 20);
+    activeObjects.push(food);
+}
 
-            const checkArrival = k.loop(0.1, () => {
+function playWithTamagotchi() {
+    if (!gameState.isAlive || gameState.isPaused || gameState.isSleeping || gameState.isInteracting) return;
+
+    gameState.isInteracting = true;
+    playSound(sounds.click);
+    showMessage(`Played with ${gameState.petName}!`);
+
+    const ballX = 80 + Math.random() * 140;
+    const ballY = 240;
+
+    // Create ball object
+    const ball = {
+        x: ballX,
+        y: -10,
+        targetY: ballY,
+        landed: false,
+        draw() {
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        },
+        update() {
+            if (!this.landed && this.y < this.targetY) {
+                this.y += 2;
+            } else if (!this.landed) {
+                this.landed = true;
+                // Move Tamagotchi to ball
+                tama.targetX = ballX;
+                tama.targetY = ballY - 20;
+            }
+
+            // Check if Tamagotchi reached ball
+            if (this.landed) {
                 const dist = Math.sqrt(
-                    Math.pow(tama.pos.x - ballX, 2) +
-                    Math.pow(tama.pos.y - (ballY - 20), 2)
+                    Math.pow(tama.x - ballX, 2) +
+                    Math.pow(tama.y - (ballY - 20), 2)
                 );
 
                 if (dist < 10) {
-                    checkArrival.cancel();
-                    ball.destroy();
+                    // Remove ball from active objects
+                    activeObjects = activeObjects.filter(obj => obj !== ball);
                     playSound(sounds.play);
 
-                    k.wait(0.4, () => {
+                    setTimeout(() => {
                         gameState.happiness = Math.min(100, gameState.happiness + 20);
                         gameState.hunger = Math.max(0, gameState.hunger - 2);
                         updateUI();
 
-                        k.wait(0.7, () => {
+                        setTimeout(() => {
                             gameState.happiness = Math.min(100, gameState.happiness + 20);
                             gameState.hunger = Math.max(0, gameState.hunger - 3);
                             playSound(sounds.play);
                             updateUI();
 
-                            k.wait(1, () => {
+                            setTimeout(() => {
                                 gameState.isInteracting = false;
                                 saveGame();
-                            });
-                        });
-                    });
+                            }, 1000);
+                        }, 700);
+                    }, 400);
                 }
-            });
-        });
+            }
+        }
     };
 
-    // Clean interaction
-    window.cleanTamagotchi = () => {
-        if (!gameState.isAlive || gameState.isPaused || gameState.isSleeping || gameState.isInteracting) return;
+    activeObjects.push(ball);
+}
 
-        if (poops.length > 0) {
-            gameState.isInteracting = true;
-            playSound(sounds.clean);
-            showMessage('Cleaned up!');
+function cleanTamagotchi() {
+    if (!gameState.isAlive || gameState.isPaused || gameState.isSleeping || gameState.isInteracting) return;
 
-            poops.forEach(p => p.destroy());
-            poops.length = 0;
-            gameState.poops = [];
+    if (gameState.poops.length > 0) {
+        gameState.isInteracting = true;
+        playSound(sounds.clean);
+        showMessage('Cleaned up!');
 
+        gameState.poops = [];
+        gameState.health = Math.min(100, gameState.health + 15);
+        updateUI();
+
+        setTimeout(() => {
             gameState.health = Math.min(100, gameState.health + 15);
             updateUI();
 
-            k.wait(0.6, () => {
-                gameState.health = Math.min(100, gameState.health + 15);
-                updateUI();
+            setTimeout(() => {
+                gameState.isInteracting = false;
+                saveGame();
+            }, 800);
+        }, 600);
+    } else {
+        showMessage('Nothing to clean!');
+    }
+}
 
-                k.wait(0.8, () => {
-                    gameState.isInteracting = false;
-                    saveGame();
-                });
-            });
-        } else {
-            showMessage('Nothing to clean!');
-        }
-    };
+function healTamagotchi() {
+    if (!gameState.isAlive || gameState.isPaused || gameState.isSleeping || gameState.isInteracting) return;
 
-    // Heal interaction
-    window.healTamagotchi = () => {
-        if (!gameState.isAlive || gameState.isPaused || gameState.isSleeping || gameState.isInteracting) return;
+    if (gameState.isSick) {
+        gameState.isInteracting = true;
+        gameState.isSick = false;
+        playSound(sounds.heal);
+        showMessage(`Healed ${gameState.petName}!`);
 
-        if (gameState.isSick) {
-            gameState.isInteracting = true;
-            gameState.isSick = false;
-            playSound(sounds.heal);
-            showMessage(`Healed ${gameState.petName}!`);
+        gameState.health = Math.min(100, gameState.health + 25);
+        updateUI();
 
+        setTimeout(() => {
             gameState.health = Math.min(100, gameState.health + 25);
             updateUI();
 
-            k.wait(0.6, () => {
-                gameState.health = Math.min(100, gameState.health + 25);
-                updateUI();
-
-                k.wait(0.8, () => {
-                    gameState.isInteracting = false;
-                    saveGame();
-                });
-            });
-        } else {
-            showMessage(`${gameState.petName} is healthy!`);
-        }
-    };
-});
+            setTimeout(() => {
+                gameState.isInteracting = false;
+                saveGame();
+            }, 800);
+        }, 600);
+    } else {
+        showMessage(`${gameState.petName} is healthy!`);
+    }
+}
 
 // ==========================================
 // UI FUNCTIONS
@@ -636,7 +604,6 @@ function loadGame() {
         }
 
         updateUI();
-        k.go("game");
     } else {
         showNameModal();
     }
@@ -646,54 +613,36 @@ function loadGame() {
 // BUTTON HANDLERS
 // ==========================================
 
-function setupButtonHandlers() {
-    document.getElementById('feed-btn').addEventListener('click', () => {
-        if (window.feedTamagotchi) window.feedTamagotchi();
-    });
+document.getElementById('feed-btn').addEventListener('click', feedTamagotchi);
+document.getElementById('play-btn').addEventListener('click', playWithTamagotchi);
+document.getElementById('clean-btn').addEventListener('click', cleanTamagotchi);
+document.getElementById('medicine-btn').addEventListener('click', healTamagotchi);
 
-    document.getElementById('play-btn').addEventListener('click', () => {
-        if (window.playWithTamagotchi) window.playWithTamagotchi();
-    });
+document.getElementById('pause-btn').addEventListener('click', () => {
+    gameState.isPaused = !gameState.isPaused;
+    const pauseIcon = document.getElementById('pause-icon');
+    const pauseLabel = document.getElementById('pause-label');
 
-    document.getElementById('clean-btn').addEventListener('click', () => {
-        if (window.cleanTamagotchi) window.cleanTamagotchi();
-    });
+    if (gameState.isPaused) {
+        pauseIcon.textContent = '▶';
+        pauseLabel.textContent = 'RESUME';
+        gameState.pauseStartTime = Date.now();
+        showMessage('Game Paused');
+    } else {
+        pauseIcon.textContent = '⏸';
+        pauseLabel.textContent = 'PAUSE';
+        gameState.pausedTime += Date.now() - gameState.pauseStartTime;
+        showMessage('Game Resumed');
+    }
+    saveGame();
+});
 
-    document.getElementById('medicine-btn').addEventListener('click', () => {
-        if (window.healTamagotchi) window.healTamagotchi();
-    });
-
-    document.getElementById('pause-btn').addEventListener('click', () => {
-        gameState.isPaused = !gameState.isPaused;
-        const pauseIcon = document.getElementById('pause-icon');
-        const pauseLabel = document.getElementById('pause-label');
-
-        if (gameState.isPaused) {
-            pauseIcon.textContent = '▶';
-            pauseLabel.textContent = 'RESUME';
-            gameState.pauseStartTime = Date.now();
-            showMessage('Game Paused');
-        } else {
-            pauseIcon.textContent = '⏸';
-            pauseLabel.textContent = 'PAUSE';
-            gameState.pausedTime += Date.now() - gameState.pauseStartTime;
-            showMessage('Game Resumed');
-        }
-        saveGame();
-    });
-
-    document.getElementById('new-game-btn').addEventListener('click', () => {
-        if (confirm('Start a new game? Current progress will be lost.')) {
-            localStorage.removeItem('tamagotchi');
-            location.reload();
-        }
-    });
-
-    document.getElementById('name-submit-btn').addEventListener('click', submitName);
-    document.getElementById('pet-name-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') submitName();
-    });
-}
+document.getElementById('new-game-btn').addEventListener('click', () => {
+    if (confirm('Start a new game? Current progress will be lost.')) {
+        localStorage.removeItem('tamagotchi');
+        location.reload();
+    }
+});
 
 // ==========================================
 // NAME MODAL
@@ -719,33 +668,18 @@ function submitName() {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
         saveGame();
-        k.go("game");
     } else {
         alert('Please enter a name for your Tamagotchi!');
     }
 }
 
+document.getElementById('name-submit-btn').addEventListener('click', submitName);
+document.getElementById('pet-name-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') submitName();
+});
+
 // ==========================================
 // START GAME
 // ==========================================
 
-// Wait for DOM to be ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startGame);
-} else {
-    startGame();
-}
-
-function startGame() {
-    console.log('Starting game...');
-
-    const kaboomReady = initKaboom();
-
-    if (!kaboomReady) {
-        console.error('Kaboom failed to initialize');
-        return;
-    }
-
-    setupButtonHandlers();
-    loadGame();
-}
+loadGame();
