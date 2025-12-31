@@ -2,15 +2,25 @@
 // TAMAGOTCHI GAME - Kaboom.js + jsfxr + TinyMusic
 // ==========================================
 
-// Initialize Kaboom
-const k = kaboom({
-    global: false,
-    width: 300,
-    height: 300,
-    canvas: document.querySelector('#game-container'),
-    background: [200, 230, 201], // Light green background
-    crisp: true, // Pixel-perfect rendering
-});
+// Initialize Kaboom after DOM is ready
+let k;
+
+function initKaboom() {
+    const container = document.getElementById('game-container');
+
+    k = kaboom({
+        global: false,
+        width: 300,
+        height: 300,
+        background: [200, 230, 201], // Light green background
+        crisp: true, // Pixel-perfect rendering
+    });
+
+    // Append Kaboom canvas to container
+    container.appendChild(k.canvas);
+
+    return k;
+}
 
 // ==========================================
 // SOUND EFFECTS (jsfxr)
@@ -611,47 +621,54 @@ function loadGame() {
 // BUTTON HANDLERS
 // ==========================================
 
-document.getElementById('feed-btn').addEventListener('click', () => {
-    if (window.feedTamagotchi) window.feedTamagotchi();
-});
+function setupButtonHandlers() {
+    document.getElementById('feed-btn').addEventListener('click', () => {
+        if (window.feedTamagotchi) window.feedTamagotchi();
+    });
 
-document.getElementById('play-btn').addEventListener('click', () => {
-    if (window.playWithTamagotchi) window.playWithTamagotchi();
-});
+    document.getElementById('play-btn').addEventListener('click', () => {
+        if (window.playWithTamagotchi) window.playWithTamagotchi();
+    });
 
-document.getElementById('clean-btn').addEventListener('click', () => {
-    if (window.cleanTamagotchi) window.cleanTamagotchi();
-});
+    document.getElementById('clean-btn').addEventListener('click', () => {
+        if (window.cleanTamagotchi) window.cleanTamagotchi();
+    });
 
-document.getElementById('medicine-btn').addEventListener('click', () => {
-    if (window.healTamagotchi) window.healTamagotchi();
-});
+    document.getElementById('medicine-btn').addEventListener('click', () => {
+        if (window.healTamagotchi) window.healTamagotchi();
+    });
 
-document.getElementById('pause-btn').addEventListener('click', () => {
-    gameState.isPaused = !gameState.isPaused;
-    const pauseIcon = document.getElementById('pause-icon');
-    const pauseLabel = document.getElementById('pause-label');
+    document.getElementById('pause-btn').addEventListener('click', () => {
+        gameState.isPaused = !gameState.isPaused;
+        const pauseIcon = document.getElementById('pause-icon');
+        const pauseLabel = document.getElementById('pause-label');
 
-    if (gameState.isPaused) {
-        pauseIcon.textContent = '▶';
-        pauseLabel.textContent = 'RESUME';
-        gameState.pauseStartTime = Date.now();
-        showMessage('Game Paused');
-    } else {
-        pauseIcon.textContent = '⏸';
-        pauseLabel.textContent = 'PAUSE';
-        gameState.pausedTime += Date.now() - gameState.pauseStartTime;
-        showMessage('Game Resumed');
-    }
-    saveGame();
-});
+        if (gameState.isPaused) {
+            pauseIcon.textContent = '▶';
+            pauseLabel.textContent = 'RESUME';
+            gameState.pauseStartTime = Date.now();
+            showMessage('Game Paused');
+        } else {
+            pauseIcon.textContent = '⏸';
+            pauseLabel.textContent = 'PAUSE';
+            gameState.pausedTime += Date.now() - gameState.pauseStartTime;
+            showMessage('Game Resumed');
+        }
+        saveGame();
+    });
 
-document.getElementById('new-game-btn').addEventListener('click', () => {
-    if (confirm('Start a new game? Current progress will be lost.')) {
-        localStorage.removeItem('tamagotchi');
-        location.reload();
-    }
-});
+    document.getElementById('new-game-btn').addEventListener('click', () => {
+        if (confirm('Start a new game? Current progress will be lost.')) {
+            localStorage.removeItem('tamagotchi');
+            location.reload();
+        }
+    });
+
+    document.getElementById('name-submit-btn').addEventListener('click', submitName);
+    document.getElementById('pet-name-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') submitName();
+    });
+}
 
 // ==========================================
 // NAME MODAL
@@ -683,13 +700,19 @@ function submitName() {
     }
 }
 
-document.getElementById('name-submit-btn').addEventListener('click', submitName);
-document.getElementById('pet-name-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') submitName();
-});
-
 // ==========================================
 // START GAME
 // ==========================================
 
-loadGame();
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startGame);
+} else {
+    startGame();
+}
+
+function startGame() {
+    initKaboom();
+    setupButtonHandlers();
+    loadGame();
+}
