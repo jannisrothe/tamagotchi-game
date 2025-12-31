@@ -12,6 +12,7 @@ class Tamagotchi {
         this.birthTime = Date.now();
         this.isPaused = false;
         this.pausedTime = 0;
+        this.isSleeping = false;
         this.petName = 'TAMA';
 
         this.x = 60;
@@ -54,6 +55,7 @@ class Tamagotchi {
         this.intervals.push(setInterval(() => this.randomBlink(), 2000));
         this.intervals.push(setInterval(() => this.maybeSpawnPoop(), 15000));
         this.intervals.push(setInterval(() => this.checkMoodChange(), 2000));
+        this.intervals.push(setInterval(() => this.checkSleepTime(), 1000));
 
         document.getElementById('feed-btn').addEventListener('click', () => this.feed());
         document.getElementById('play-btn').addEventListener('click', () => this.play());
@@ -71,8 +73,34 @@ class Tamagotchi {
         });
     }
 
+    checkSleepTime() {
+        const now = new Date();
+        const hour = now.getHours();
+
+        const shouldBeSleeping = hour >= 22 || hour < 8;
+
+        if (shouldBeSleeping && !this.isSleeping) {
+            this.isSleeping = true;
+            this.showSleepIndicator(true);
+            this.showMessage(`${this.petName} is sleeping... Zzz`);
+        } else if (!shouldBeSleeping && this.isSleeping) {
+            this.isSleeping = false;
+            this.showSleepIndicator(false);
+            this.showMessage(`${this.petName} woke up!`);
+        }
+    }
+
+    showSleepIndicator(show) {
+        const indicator = document.getElementById('sleep-indicator');
+        if (show) {
+            indicator.classList.remove('hidden');
+        } else {
+            indicator.classList.add('hidden');
+        }
+    }
+
     tick() {
-        if (!this.isAlive || this.isPaused) return;
+        if (!this.isAlive || this.isPaused || this.isSleeping) return;
 
         this.hunger = Math.max(0, this.hunger - 1);
         this.happiness = Math.max(0, this.happiness - 0.5);
@@ -131,14 +159,14 @@ class Tamagotchi {
     }
 
     randomMove() {
-        if (!this.isAlive || this.stage === 'egg' || this.isPaused) return;
+        if (!this.isAlive || this.stage === 'egg' || this.isPaused || this.isSleeping) return;
 
         this.targetX = 20 + Math.random() * 80;
         this.targetY = 40 + Math.random() * 60;
     }
 
     updateMovement() {
-        if (!this.isAlive || this.stage === 'egg' || this.isPaused) return;
+        if (!this.isAlive || this.stage === 'egg' || this.isPaused || this.isSleeping) return;
 
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
@@ -162,7 +190,7 @@ class Tamagotchi {
     }
 
     maybeSpawnPoop() {
-        if (!this.isAlive || this.stage === 'egg' || this.poops.length >= 3 || this.isPaused) return;
+        if (!this.isAlive || this.stage === 'egg' || this.poops.length >= 3 || this.isPaused || this.isSleeping) return;
 
         if (Math.random() < 0.4) {
             this.poops.push({
@@ -205,7 +233,7 @@ class Tamagotchi {
     }
 
     checkMoodChange() {
-        if (!this.isAlive || this.isPaused || this.stage === 'egg') return;
+        if (!this.isAlive || this.isPaused || this.stage === 'egg' || this.isSleeping) return;
 
         const currentMood = this.getMood();
         if (currentMood !== this.lastMood) {
@@ -279,7 +307,8 @@ class Tamagotchi {
     showNameModal() {
         const modal = document.getElementById('name-modal');
         const input = document.getElementById('pet-name-input');
-        modal.classList.add('active');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
         input.value = '';
         input.focus();
     }
@@ -291,7 +320,9 @@ class Tamagotchi {
         if (name.length > 0) {
             this.petName = name.toUpperCase().substring(0, 12);
             document.getElementById('pet-name').textContent = this.petName;
-            document.getElementById('name-modal').classList.remove('active');
+            const modal = document.getElementById('name-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
             this.saveGame();
         } else {
             alert('Please enter a name for your Tamagotchi!');
@@ -299,7 +330,7 @@ class Tamagotchi {
     }
 
     feed() {
-        if (!this.isAlive || this.isPaused) return;
+        if (!this.isAlive || this.isPaused || this.isSleeping) return;
 
         this.hunger = Math.min(100, this.hunger + 20);
         this.showMessage(`Fed ${this.petName}!`);
@@ -310,7 +341,7 @@ class Tamagotchi {
     }
 
     play() {
-        if (!this.isAlive || this.isPaused) return;
+        if (!this.isAlive || this.isPaused || this.isSleeping) return;
 
         this.happiness = Math.min(100, this.happiness + 20);
         this.hunger = Math.max(0, this.hunger - 5);
@@ -322,7 +353,7 @@ class Tamagotchi {
     }
 
     clean() {
-        if (!this.isAlive || this.isPaused) return;
+        if (!this.isAlive || this.isPaused || this.isSleeping) return;
 
         if (this.poops.length > 0) {
             this.poops = [];
@@ -338,7 +369,7 @@ class Tamagotchi {
     }
 
     heal() {
-        if (!this.isAlive || this.isPaused) return;
+        if (!this.isAlive || this.isPaused || this.isSleeping) return;
 
         if (this.isSick) {
             this.isSick = false;
@@ -483,7 +514,7 @@ class Tamagotchi {
     drawBaby() {
         const colors = this.colors.baby;
         const mood = this.getMood();
-        const bounce = Math.sin(this.animationFrame * Math.PI / 2) * 2;
+        const bounce = this.isSleeping ? 0 : Math.sin(this.animationFrame * Math.PI / 2) * 2;
         const cx = this.x;
         const cy = this.y + bounce;
 
@@ -504,13 +535,19 @@ class Tamagotchi {
             }
         }
 
-        if (!this.isBlinking) {
-            this.drawColoredPixel(drawX - 4, cy - 2, '#2c3e50', 3);
-            this.drawColoredPixel(drawX + 4, cy - 2, '#2c3e50', 3);
-        } else {
+        if (this.isSleeping || this.isBlinking) {
             this.ctx.fillStyle = '#2c3e50';
             this.ctx.fillRect(drawX - 5, cy - 1, 4, 1);
             this.ctx.fillRect(drawX + 3, cy - 1, 4, 1);
+
+            if (this.isSleeping) {
+                this.ctx.font = '12px Arial';
+                this.ctx.fillText('Z', drawX + 12, cy - 8);
+                this.ctx.fillText('z', drawX + 18, cy - 12);
+            }
+        } else {
+            this.drawColoredPixel(drawX - 4, cy - 2, '#2c3e50', 3);
+            this.drawColoredPixel(drawX + 4, cy - 2, '#2c3e50', 3);
         }
 
         if (mood === 'happy') {
@@ -534,7 +571,7 @@ class Tamagotchi {
     drawChild() {
         const colors = this.colors.child;
         const mood = this.getMood();
-        const bounce = Math.sin(this.animationFrame * Math.PI / 2) * 2;
+        const bounce = this.isSleeping ? 0 : Math.sin(this.animationFrame * Math.PI / 2) * 2;
         const cx = this.x;
         const cy = this.y + bounce;
 
@@ -558,15 +595,21 @@ class Tamagotchi {
             }
         }
 
-        if (!this.isBlinking) {
+        if (this.isSleeping || this.isBlinking) {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 6, cy - 2, 5, 1);
+            this.ctx.fillRect(drawX + 3, cy - 2, 5, 1);
+
+            if (this.isSleeping) {
+                this.ctx.font = '14px Arial';
+                this.ctx.fillText('Z', drawX + 14, cy - 10);
+                this.ctx.fillText('z', drawX + 20, cy - 14);
+            }
+        } else {
             this.drawColoredPixel(drawX - 5, cy - 3, '#2c3e50', 4);
             this.drawColoredPixel(drawX + 5, cy - 3, '#2c3e50', 4);
             this.drawColoredPixel(drawX - 5, cy - 4, '#fff', 2);
             this.drawColoredPixel(drawX + 5, cy - 4, '#fff', 2);
-        } else {
-            this.ctx.fillStyle = '#2c3e50';
-            this.ctx.fillRect(drawX - 6, cy - 2, 5, 1);
-            this.ctx.fillRect(drawX + 3, cy - 2, 5, 1);
         }
 
         if (mood === 'happy') {
@@ -592,7 +635,7 @@ class Tamagotchi {
     drawAdult() {
         const colors = this.colors.adult;
         const mood = this.getMood();
-        const bounce = Math.sin(this.animationFrame * Math.PI / 2) * 3;
+        const bounce = this.isSleeping ? 0 : Math.sin(this.animationFrame * Math.PI / 2) * 3;
         const cx = this.x;
         const cy = this.y + bounce;
 
@@ -616,15 +659,21 @@ class Tamagotchi {
             }
         }
 
-        if (!this.isBlinking) {
+        if (this.isSleeping || this.isBlinking) {
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(drawX - 8, cy - 3, 6, 2);
+            this.ctx.fillRect(drawX + 4, cy - 3, 6, 2);
+
+            if (this.isSleeping) {
+                this.ctx.font = '16px Arial';
+                this.ctx.fillText('Z', drawX + 16, cy - 12);
+                this.ctx.fillText('z', drawX + 24, cy - 16);
+            }
+        } else {
             this.drawColoredPixel(drawX - 6, cy - 4, '#2c3e50', 5);
             this.drawColoredPixel(drawX + 6, cy - 4, '#2c3e50', 5);
             this.drawColoredPixel(drawX - 6, cy - 5, '#fff', 3);
             this.drawColoredPixel(drawX + 6, cy - 5, '#fff', 3);
-        } else {
-            this.ctx.fillStyle = '#2c3e50';
-            this.ctx.fillRect(drawX - 8, cy - 3, 6, 2);
-            this.ctx.fillRect(drawX + 4, cy - 3, 6, 2);
         }
 
         if (mood === 'happy') {

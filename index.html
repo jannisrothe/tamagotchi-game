@@ -4,84 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tamagotchi - Virtual Pet</title>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tamagotchi: {
+                            pink: '#ff6b9d',
+                            purple: '#aa96da',
+                            blue: '#a8d8ea',
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['"Courier New"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .pixel-art {
+                image-rendering: pixelated;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: crisp-edges;
+            }
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="device">
-            <div class="screen">
-                <div class="status-bar">
-                    <div class="stat">
-                        <span class="icon">♥</span>
-                        <div class="meter">
-                            <div class="fill" id="hunger-fill"></div>
+<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen flex items-center justify-center font-mono">
+    <div class="p-5">
+        <div class="bg-gradient-to-br from-pink-400 to-pink-600 rounded-[30px] p-5 shadow-2xl max-w-md">
+            <!-- Screen -->
+            <div class="bg-blue-100 border-4 border-gray-800 rounded-lg p-4 shadow-inner">
+                <!-- Sleep indicator -->
+                <div id="sleep-indicator" class="hidden bg-indigo-900 text-white text-center py-2 px-4 rounded-lg mb-3 text-sm font-bold">
+                    <span class="mr-2">🌙</span>
+                    <span id="sleep-text">Sleeping... (10pm - 8am)</span>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="flex justify-around mb-4 p-2 bg-white border-2 border-gray-800 rounded">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-base font-bold">♥</span>
+                        <div class="w-20 h-3 border-2 border-gray-800 bg-gray-100 rounded-full overflow-hidden">
+                            <div id="hunger-fill" class="h-full bg-gradient-to-r from-red-400 to-red-600 transition-all duration-300 rounded-full"></div>
                         </div>
                     </div>
-                    <div class="stat">
-                        <span class="icon">☺</span>
-                        <div class="meter">
-                            <div class="fill" id="happiness-fill"></div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-base font-bold">☺</span>
+                        <div class="w-20 h-3 border-2 border-gray-800 bg-gray-100 rounded-full overflow-hidden">
+                            <div id="happiness-fill" class="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 transition-all duration-300 rounded-full"></div>
                         </div>
                     </div>
-                    <div class="stat">
-                        <span class="icon">+</span>
-                        <div class="meter">
-                            <div class="fill" id="health-fill"></div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-base font-bold">+</span>
+                        <div class="w-20 h-3 border-2 border-gray-800 bg-gray-100 rounded-full overflow-hidden">
+                            <div id="health-fill" class="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300 rounded-full"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="pet-area">
-                    <canvas id="petCanvas" width="120" height="120"></canvas>
-                    <div class="info">
-                        <p id="pet-name" class="pet-name-display">TAMA</p>
-                        <p id="pet-age">Age: 0</p>
-                        <p id="pet-stage">EGG</p>
+                <!-- Pet Area -->
+                <div class="bg-white border-2 border-gray-800 rounded-lg p-4 min-h-[200px] flex flex-col items-center justify-center gap-3 relative">
+                    <canvas id="petCanvas" width="120" height="120" class="pixel-art"></canvas>
+                    <div class="text-center font-bold text-xs">
+                        <p id="pet-name" class="text-sm text-pink-500 drop-shadow-sm">TAMA</p>
+                        <p id="pet-age" class="text-gray-700">Age: 0</p>
+                        <p id="pet-stage" class="text-gray-700">EGG</p>
                     </div>
                 </div>
 
-                <div id="status-message"></div>
+                <!-- Status Message -->
+                <div id="status-message" class="mt-3 p-2 bg-white border-2 border-gray-800 rounded min-h-[30px] text-center text-xs font-bold text-gray-700"></div>
             </div>
 
-            <div class="game-controls">
-                <button class="game-btn" id="pause-btn">
-                    <span id="pause-icon">⏸</span>
+            <!-- Game Controls -->
+            <div class="flex gap-2 mt-4 justify-center">
+                <button id="pause-btn" class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-950 rounded-lg px-4 py-2 text-xs font-bold text-white hover:from-gray-600 hover:to-gray-800 active:scale-95 transition-all shadow-md flex items-center gap-2">
+                    <span id="pause-icon" class="text-sm">⏸</span>
                     <span id="pause-label">PAUSE</span>
                 </button>
-                <button class="game-btn" id="new-game-btn">
-                    <span>↻</span>
+                <button id="new-game-btn" class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-950 rounded-lg px-4 py-2 text-xs font-bold text-white hover:from-gray-600 hover:to-gray-800 active:scale-95 transition-all shadow-md flex items-center gap-2">
+                    <span class="text-sm">↻</span>
                     <span>NEW GAME</span>
                 </button>
             </div>
 
-            <div class="controls">
-                <button class="btn" id="feed-btn" title="Feed">
-                    <span class="btn-icon">🍖</span>
-                    <span class="btn-label">FEED</span>
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <button id="feed-btn" class="bg-gradient-to-br from-white to-gray-100 border-3 border-gray-800 rounded-xl p-4 font-bold hover:from-white hover:to-gray-50 hover:-translate-y-1 active:translate-y-0 transition-all shadow-md flex flex-col items-center gap-2">
+                    <span class="text-2xl">🍖</span>
+                    <span class="text-xs text-gray-800">FEED</span>
                 </button>
-                <button class="btn" id="play-btn" title="Play">
-                    <span class="btn-icon">⚾</span>
-                    <span class="btn-label">PLAY</span>
+                <button id="play-btn" class="bg-gradient-to-br from-white to-gray-100 border-3 border-gray-800 rounded-xl p-4 font-bold hover:from-white hover:to-gray-50 hover:-translate-y-1 active:translate-y-0 transition-all shadow-md flex flex-col items-center gap-2">
+                    <span class="text-2xl">⚾</span>
+                    <span class="text-xs text-gray-800">PLAY</span>
                 </button>
-                <button class="btn" id="clean-btn" title="Clean">
-                    <span class="btn-icon">💧</span>
-                    <span class="btn-label">CLEAN</span>
+                <button id="clean-btn" class="bg-gradient-to-br from-white to-gray-100 border-3 border-gray-800 rounded-xl p-4 font-bold hover:from-white hover:to-gray-50 hover:-translate-y-1 active:translate-y-0 transition-all shadow-md flex flex-col items-center gap-2">
+                    <span class="text-2xl">💧</span>
+                    <span class="text-xs text-gray-800">CLEAN</span>
                 </button>
-                <button class="btn" id="medicine-btn" title="Medicine">
-                    <span class="btn-icon">💊</span>
-                    <span class="btn-label">HEAL</span>
+                <button id="medicine-btn" class="bg-gradient-to-br from-white to-gray-100 border-3 border-gray-800 rounded-xl p-4 font-bold hover:from-white hover:to-gray-50 hover:-translate-y-1 active:translate-y-0 transition-all shadow-md flex flex-col items-center gap-2">
+                    <span class="text-2xl">💊</span>
+                    <span class="text-xs text-gray-800">HEAL</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="name-modal" class="modal">
-        <div class="modal-content">
-            <h2>Name Your Tamagotchi!</h2>
-            <input type="text" id="pet-name-input" maxlength="12" placeholder="Enter name...">
-            <button id="name-submit-btn" class="modal-btn">Start Game</button>
+    <!-- Name Modal -->
+    <div id="name-modal" class="hidden fixed inset-0 bg-black/70 z-50 items-center justify-center">
+        <div class="bg-gradient-to-br from-white to-gray-100 p-8 rounded-2xl border-4 border-gray-800 text-center shadow-2xl animate-[slideIn_0.3s_ease-out] max-w-sm mx-4">
+            <h2 class="font-mono text-gray-800 mb-5 text-xl font-bold">Name Your Tamagotchi!</h2>
+            <input type="text" id="pet-name-input" maxlength="12" placeholder="Enter name..."
+                class="font-mono text-base px-3 py-3 border-3 border-gray-800 rounded-lg w-full text-center font-bold mb-5 bg-white focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-200">
+            <button id="name-submit-btn" class="font-mono text-sm font-bold px-8 py-3 bg-gradient-to-br from-pink-400 to-pink-600 text-white border-3 border-gray-800 rounded-xl hover:from-pink-500 hover:to-pink-700 hover:-translate-y-1 active:translate-y-0 transition-all shadow-lg">
+                Start Game
+            </button>
         </div>
     </div>
+
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 
     <script src="script.js"></script>
 </body>
