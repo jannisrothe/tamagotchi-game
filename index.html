@@ -3,21 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tamagotchi - Virtual Pet</title>
+    <title>TAMAGOTCHI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        tamagotchi: {
-                            pink: '#ff6b9d',
-                            purple: '#aa96da',
-                            blue: '#a8d8ea',
-                        }
-                    },
                     fontFamily: {
-                        mono: ['"Courier New"', 'monospace'],
+                        mono: ['"Space Mono"', '"Courier New"', 'monospace'],
                     }
                 }
             }
@@ -30,114 +26,117 @@
                 image-rendering: -moz-crisp-edges;
                 image-rendering: crisp-edges;
             }
+            .brutal-shadow {
+                box-shadow: 6px 6px 0px #000000;
+            }
+            .brutal-shadow-sm {
+                box-shadow: 3px 3px 0px #000000;
+            }
+            .brutal-shadow-lg {
+                box-shadow: 10px 10px 0px #000000;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen flex items-center justify-center font-mono">
-    <div class="p-5">
-        <div class="bg-gradient-to-br from-pink-400 to-pink-600 rounded-[30px] p-5 shadow-2xl max-w-md">
+<body class="bg-[#e8e8e8] min-h-screen flex items-center justify-center font-mono p-5">
+    <div class="w-full max-w-2xl">
+        <!-- Header -->
+        <div class="bg-black text-white p-6 mb-8 border-4 border-black brutal-shadow-lg">
+            <h1 class="text-4xl font-bold uppercase text-center tracking-tight">TAMAGOTCHI</h1>
+            <p class="text-center text-sm mt-2 tracking-wide opacity-90">VIRTUAL PET SIMULATOR</p>
+        </div>
+
+        <!-- Device -->
+        <div class="bg-[#FFD93D] p-6 border-5 border-black brutal-shadow-lg">
             <!-- Screen -->
-            <div class="bg-blue-100 border-4 border-gray-800 rounded-lg p-4 shadow-inner">
+            <div class="bg-[#C8E6C9] border-4 border-black p-5">
                 <!-- Sleep indicator -->
-                <div id="sleep-indicator" class="hidden bg-indigo-900 text-white text-center py-2 px-4 rounded-lg mb-3 text-sm font-bold">
+                <div id="sleep-indicator" class="hidden bg-black text-white text-center py-2 px-4 mb-3 text-sm font-bold uppercase border-2 border-black">
                     <span class="mr-2">🌙</span>
-                    <span id="sleep-text">Sleeping... (10pm - 8am)</span>
+                    <span id="sleep-text">SLEEPING (10PM - 8AM)</span>
                 </div>
 
                 <!-- Status Bar -->
-                <div class="flex justify-around mb-4 p-2 bg-white border-2 border-gray-800 rounded">
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-base font-bold">♥</span>
-                        <div class="w-20 h-3 border-2 border-gray-800 bg-gray-100 rounded-full overflow-hidden">
-                            <div id="hunger-fill" class="h-full bg-gradient-to-r from-red-400 to-red-600 transition-all duration-300 rounded-full"></div>
+                <div class="flex justify-around mb-4 p-3 bg-white border-3 border-black">
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="text-lg font-bold">♥</span>
+                        <div class="w-24 h-4 border-3 border-black bg-white">
+                            <div id="hunger-fill" class="h-full bg-[#FF6B6B] transition-all duration-300"></div>
                         </div>
                     </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-base font-bold">☺</span>
-                        <div class="w-20 h-3 border-2 border-gray-800 bg-gray-100 rounded-full overflow-hidden">
-                            <div id="happiness-fill" class="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 transition-all duration-300 rounded-full"></div>
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="text-lg font-bold">☺</span>
+                        <div class="w-24 h-4 border-3 border-black bg-white">
+                            <div id="happiness-fill" class="h-full bg-[#FFD93D] transition-all duration-300"></div>
                         </div>
                     </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-base font-bold">+</span>
-                        <div class="w-20 h-3 border-2 border-gray-800 bg-gray-100 rounded-full overflow-hidden">
-                            <div id="health-fill" class="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300 rounded-full"></div>
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="text-lg font-bold">+</span>
+                        <div class="w-24 h-4 border-3 border-black bg-white">
+                            <div id="health-fill" class="h-full bg-[#4ECDC4] transition-all duration-300"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Pet Area -->
-                <div class="bg-white border-2 border-gray-800 rounded-lg p-4 min-h-[200px] flex flex-col items-center justify-center gap-3 relative">
-                    <canvas id="petCanvas" width="120" height="120" class="pixel-art"></canvas>
-                    <div class="text-center font-bold text-xs">
-                        <p id="pet-name" class="text-sm text-pink-500 drop-shadow-sm">TAMA</p>
-                        <p id="pet-age" class="text-gray-700">Age: 0</p>
-                        <p id="pet-stage" class="text-gray-700">EGG</p>
+                <div class="bg-white border-3 border-black p-6 min-h-[300px] flex flex-col items-center justify-center gap-4">
+                    <canvas id="petCanvas" width="200" height="200" class="pixel-art"></canvas>
+                    <div class="text-center font-bold">
+                        <p id="pet-name" class="text-xl text-black uppercase tracking-wider">TAMA</p>
+                        <p id="pet-age" class="text-sm text-gray-700 mt-1">AGE: 0</p>
+                        <p id="pet-stage" class="text-sm text-gray-700">EGG</p>
                     </div>
                 </div>
 
                 <!-- Status Message -->
-                <div id="status-message" class="mt-3 p-2 bg-white border-2 border-gray-800 rounded min-h-[30px] text-center text-xs font-bold text-gray-700"></div>
+                <div id="status-message" class="mt-4 p-3 bg-white border-3 border-black min-h-[40px] text-center text-sm font-bold uppercase tracking-wide"></div>
             </div>
 
             <!-- Game Controls -->
-            <div class="flex gap-2 mt-4 justify-center">
-                <button id="pause-btn" class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-950 rounded-lg px-4 py-2 text-xs font-bold text-white hover:from-gray-600 hover:to-gray-800 active:scale-95 transition-all shadow-md flex items-center gap-2">
-                    <span id="pause-icon" class="text-sm">⏸</span>
+            <div class="flex gap-3 mt-5 justify-center">
+                <button id="pause-btn" class="bg-black border-3 border-black px-5 py-3 text-sm font-bold text-white uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-2">
+                    <span id="pause-icon">⏸</span>
                     <span id="pause-label">PAUSE</span>
                 </button>
-                <button id="new-game-btn" class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-950 rounded-lg px-4 py-2 text-xs font-bold text-white hover:from-gray-600 hover:to-gray-800 active:scale-95 transition-all shadow-md flex items-center gap-2">
-                    <span class="text-sm">↻</span>
+                <button id="new-game-btn" class="bg-black border-3 border-black px-5 py-3 text-sm font-bold text-white uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-2">
+                    <span>↻</span>
                     <span>NEW GAME</span>
                 </button>
             </div>
 
             <!-- Action Buttons -->
-            <div class="grid grid-cols-2 gap-4 mt-4">
-                <button id="feed-btn" class="bg-gradient-to-br from-white to-gray-100 border-3 border-gray-800 rounded-xl p-4 font-bold hover:from-white hover:to-gray-50 hover:-translate-y-1 active:translate-y-0 transition-all shadow-md flex flex-col items-center gap-2">
-                    <span class="text-2xl">🍖</span>
-                    <span class="text-xs text-gray-800">FEED</span>
+            <div class="grid grid-cols-2 gap-4 mt-5">
+                <button id="feed-btn" class="bg-white border-4 border-black p-5 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex flex-col items-center gap-2">
+                    <span class="text-3xl">🍖</span>
+                    <span class="text-xs uppercase tracking-wider">FEED</span>
                 </button>
-                <button id="play-btn" class="bg-gradient-to-br from-white to-gray-100 border-3 border-gray-800 rounded-xl p-4 font-bold hover:from-white hover:to-gray-50 hover:-translate-y-1 active:translate-y-0 transition-all shadow-md flex flex-col items-center gap-2">
-                    <span class="text-2xl">⚾</span>
-                    <span class="text-xs text-gray-800">PLAY</span>
+                <button id="play-btn" class="bg-white border-4 border-black p-5 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex flex-col items-center gap-2">
+                    <span class="text-3xl">⚾</span>
+                    <span class="text-xs uppercase tracking-wider">PLAY</span>
                 </button>
-                <button id="clean-btn" class="bg-gradient-to-br from-white to-gray-100 border-3 border-gray-800 rounded-xl p-4 font-bold hover:from-white hover:to-gray-50 hover:-translate-y-1 active:translate-y-0 transition-all shadow-md flex flex-col items-center gap-2">
-                    <span class="text-2xl">💧</span>
-                    <span class="text-xs text-gray-800">CLEAN</span>
+                <button id="clean-btn" class="bg-white border-4 border-black p-5 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex flex-col items-center gap-2">
+                    <span class="text-3xl">💧</span>
+                    <span class="text-xs uppercase tracking-wider">CLEAN</span>
                 </button>
-                <button id="medicine-btn" class="bg-gradient-to-br from-white to-gray-100 border-3 border-gray-800 rounded-xl p-4 font-bold hover:from-white hover:to-gray-50 hover:-translate-y-1 active:translate-y-0 transition-all shadow-md flex flex-col items-center gap-2">
-                    <span class="text-2xl">💊</span>
-                    <span class="text-xs text-gray-800">HEAL</span>
+                <button id="medicine-btn" class="bg-white border-4 border-black p-5 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex flex-col items-center gap-2">
+                    <span class="text-3xl">💊</span>
+                    <span class="text-xs uppercase tracking-wider">HEAL</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Name Modal -->
-    <div id="name-modal" class="hidden fixed inset-0 bg-black/70 z-50 items-center justify-center">
-        <div class="bg-gradient-to-br from-white to-gray-100 p-8 rounded-2xl border-4 border-gray-800 text-center shadow-2xl animate-[slideIn_0.3s_ease-out] max-w-sm mx-4">
-            <h2 class="font-mono text-gray-800 mb-5 text-xl font-bold">Name Your Tamagotchi!</h2>
-            <input type="text" id="pet-name-input" maxlength="12" placeholder="Enter name..."
-                class="font-mono text-base px-3 py-3 border-3 border-gray-800 rounded-lg w-full text-center font-bold mb-5 bg-white focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-200">
-            <button id="name-submit-btn" class="font-mono text-sm font-bold px-8 py-3 bg-gradient-to-br from-pink-400 to-pink-600 text-white border-3 border-gray-800 rounded-xl hover:from-pink-500 hover:to-pink-700 hover:-translate-y-1 active:translate-y-0 transition-all shadow-lg">
-                Start Game
+    <div id="name-modal" class="hidden fixed inset-0 bg-black/80 z-50 items-center justify-center">
+        <div class="bg-white p-10 border-5 border-black text-center brutal-shadow-lg max-w-md mx-4">
+            <h2 class="font-mono text-black mb-6 text-2xl font-bold uppercase tracking-tight">NAME YOUR PET</h2>
+            <input type="text" id="pet-name-input" maxlength="12" placeholder="ENTER NAME..."
+                class="font-mono text-lg px-4 py-4 border-4 border-black w-full text-center font-bold mb-6 bg-white focus:outline-none uppercase tracking-wider">
+            <button id="name-submit-btn" class="font-mono text-sm font-bold px-10 py-4 bg-black text-white border-4 border-black uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all w-full">
+                START GAME
             </button>
         </div>
     </div>
-
-    <style>
-        @keyframes slideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-    </style>
 
     <script src="script.js"></script>
 </body>
