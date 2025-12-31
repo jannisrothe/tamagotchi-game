@@ -26,10 +26,13 @@ function playSound(soundArray) {
     try {
         if (typeof jsfxr !== 'undefined') {
             const audio = jsfxr(soundArray);
-            audio.play();
+            audio.play().catch(err => console.log('Audio play blocked:', err));
+            console.log('Sound played');
+        } else {
+            console.error('jsfxr library not loaded!');
         }
     } catch(e) {
-        console.log('Sound play failed:', e);
+        console.error('Sound play failed:', e);
     }
 }
 
@@ -42,6 +45,7 @@ let musicStarted = false;
 function initMusic() {
     try {
         if (typeof TinyMusic !== 'undefined' && !musicStarted) {
+            console.log('Initializing background music...');
             const tempo = 120;
             const sequence = new TinyMusic.Sequence(null, tempo, [
                 'C4 q', 'E4 q', 'G4 q', 'E4 q',
@@ -55,18 +59,28 @@ function initMusic() {
             bgMusic.add(sequence);
             bgMusic.play();
             musicStarted = true;
+            console.log('Background music started!');
+        } else if (typeof TinyMusic === 'undefined') {
+            console.error('TinyMusic library not loaded!');
         }
     } catch(e) {
-        console.log('Music init failed:', e);
+        console.error('Music init failed:', e);
     }
 }
 
 // Start music on first user interaction
 document.addEventListener('click', () => {
     if (!musicStarted) {
+        console.log('First click detected, starting music...');
         initMusic();
     }
 }, { once: true });
+
+// Check if libraries loaded
+window.addEventListener('load', () => {
+    console.log('jsfxr loaded:', typeof jsfxr !== 'undefined');
+    console.log('TinyMusic loaded:', typeof TinyMusic !== 'undefined');
+});
 
 // ==========================================
 // GAME STATE
@@ -316,11 +330,11 @@ setInterval(() => {
     const ageInSeconds = Math.floor((Date.now() - gameState.birthTime - gameState.pausedTime) / 1000);
     gameState.age = ageInSeconds;
 
-    if (gameState.stage === 'egg' && ageInSeconds >= 300) {
+    if (gameState.stage === 'egg' && ageInSeconds >= 10) {
         evolve('baby');
-    } else if (gameState.stage === 'baby' && ageInSeconds >= 3900) {
+    } else if (gameState.stage === 'baby' && ageInSeconds >= 30) {
         evolve('child');
-    } else if (gameState.stage === 'child' && ageInSeconds >= 25200) {
+    } else if (gameState.stage === 'child' && ageInSeconds >= 60) {
         evolve('adult');
     }
 
