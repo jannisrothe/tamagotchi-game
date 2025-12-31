@@ -15,15 +15,16 @@ class Tamagotchi {
         this.isSleeping = false;
         this.petName = 'TAMA';
 
-        this.x = 100;
-        this.y = 100;
-        this.targetX = 100;
-        this.targetY = 100;
+        this.x = 75;
+        this.y = 75;
+        this.targetX = 75;
+        this.targetY = 75;
         this.facingRight = true;
         this.isBlinking = false;
 
         this.poops = [];
         this.particles = [];
+        this.particleQueue = [];
         this.speechBubble = null;
         this.lastMood = 'neutral';
 
@@ -55,6 +56,7 @@ class Tamagotchi {
         this.intervals.push(setInterval(() => this.randomBlink(), 2000));
         this.intervals.push(setInterval(() => this.maybeSpawnPoop(), 15000));
         this.intervals.push(setInterval(() => this.checkMoodChange(), 2000));
+        this.intervals.push(setInterval(() => this.spawnNextParticle(), 400));
         // Sleep mode disabled for testing
         // this.intervals.push(setInterval(() => this.checkSleepTime(), 1000));
 
@@ -103,15 +105,15 @@ class Tamagotchi {
     tick() {
         if (!this.isAlive || this.isPaused || this.isSleeping) return;
 
-        this.hunger = Math.max(0, this.hunger - 1);
-        this.happiness = Math.max(0, this.happiness - 0.5);
+        this.hunger = Math.max(0, this.hunger - 0.2);
+        this.happiness = Math.max(0, this.happiness - 0.1);
 
         if (this.poops.length > 0) {
-            this.health = Math.max(0, this.health - 2);
+            this.health = Math.max(0, this.health - 0.5);
         }
 
         if (this.hunger < 30 || this.happiness < 30) {
-            this.health = Math.max(0, this.health - 0.5);
+            this.health = Math.max(0, this.health - 0.1);
         }
 
         if (this.health < 30 && !this.isSick) {
@@ -147,7 +149,7 @@ class Tamagotchi {
     evolve(newStage) {
         this.stage = newStage;
         this.showMessage(`${this.petName} evolved to ${newStage.toUpperCase()}!`);
-        this.createParticles(this.x, this.y - 20, '✨', 10, 'fall');
+        this.createParticles(this.x, this.y - 20, '★', 4, 'fall');
         this.showSpeechBubble('🎉');
     }
 
@@ -162,8 +164,8 @@ class Tamagotchi {
     randomMove() {
         if (!this.isAlive || this.stage === 'egg' || this.isPaused || this.isSleeping) return;
 
-        this.targetX = 30 + Math.random() * 140;
-        this.targetY = 60 + Math.random() * 100;
+        this.targetX = 25 + Math.random() * 100;
+        this.targetY = 50 + Math.random() * 70;
     }
 
     updateMovement() {
@@ -195,8 +197,8 @@ class Tamagotchi {
 
         if (Math.random() < 0.4) {
             this.poops.push({
-                x: 30 + Math.random() * 140,
-                y: 140 + Math.random() * 40
+                x: 25 + Math.random() * 100,
+                y: 110 + Math.random() * 30
             });
         }
     }
@@ -204,17 +206,17 @@ class Tamagotchi {
     createParticles(x, y, emoji, count, type = 'fall') {
         for (let i = 0; i < count; i++) {
             if (type === 'fall') {
-                this.particles.push({
-                    x: x + (Math.random() - 0.5) * 40,
+                this.particleQueue.push({
+                    x: 75,
                     y: -10,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: Math.random() * 2 + 1,
-                    life: 90,
+                    vx: 0,
+                    vy: 1.5,
+                    life: 80,
                     emoji: emoji,
                     targetY: y
                 });
             } else {
-                this.particles.push({
+                this.particleQueue.push({
                     x: x,
                     y: y,
                     vx: (Math.random() - 0.5) * 2,
@@ -223,6 +225,12 @@ class Tamagotchi {
                     emoji: emoji
                 });
             }
+        }
+    }
+
+    spawnNextParticle() {
+        if (this.particleQueue.length > 0 && !this.isPaused) {
+            this.particles.push(this.particleQueue.shift());
         }
     }
 
@@ -333,9 +341,9 @@ class Tamagotchi {
     feed() {
         if (!this.isAlive || this.isPaused || this.isSleeping) return;
 
-        this.hunger = Math.min(100, this.hunger + 20);
+        this.hunger = Math.min(100, this.hunger + 40);
         this.showMessage(`Fed ${this.petName}!`);
-        this.createParticles(this.x, this.y, '🍖', 5, 'fall');
+        this.createParticles(this.x, this.y, '●', 3, 'fall');
         this.showSpeechBubble('😋');
         this.updateUI();
         this.saveGame();
@@ -344,10 +352,10 @@ class Tamagotchi {
     play() {
         if (!this.isAlive || this.isPaused || this.isSleeping) return;
 
-        this.happiness = Math.min(100, this.happiness + 20);
+        this.happiness = Math.min(100, this.happiness + 40);
         this.hunger = Math.max(0, this.hunger - 5);
         this.showMessage(`Played with ${this.petName}!`);
-        this.createParticles(this.x, this.y, '⚾', 6, 'fall');
+        this.createParticles(this.x, this.y, '○', 3, 'fall');
         this.showSpeechBubble('😄');
         this.updateUI();
         this.saveGame();
@@ -358,9 +366,9 @@ class Tamagotchi {
 
         if (this.poops.length > 0) {
             this.poops = [];
-            this.health = Math.min(100, this.health + 10);
+            this.health = Math.min(100, this.health + 30);
             this.showMessage('Cleaned up!');
-            this.createParticles(this.x, this.y - 20, '✨', 12, 'fall');
+            this.createParticles(this.x, this.y - 20, '✦', 3, 'fall');
             this.showSpeechBubble('😌');
         } else {
             this.showMessage('Nothing to clean!');
@@ -374,9 +382,9 @@ class Tamagotchi {
 
         if (this.isSick) {
             this.isSick = false;
-            this.health = Math.min(100, this.health + 30);
+            this.health = Math.min(100, this.health + 50);
             this.showMessage(`Healed ${this.petName}!`);
-            this.createParticles(this.x, this.y, '💊', 6, 'fall');
+            this.createParticles(this.x, this.y, '+', 3, 'fall');
             this.showSpeechBubble('😊');
         } else {
             this.showMessage(`${this.petName} is healthy!`);
@@ -446,10 +454,10 @@ class Tamagotchi {
     }
 
     drawSpeechBubble() {
-        const bubbleX = this.x + 42;
-        const bubbleY = this.y - 50;
-        const bubbleWidth = 50;
-        const bubbleHeight = 42;
+        const bubbleX = this.x + 30;
+        const bubbleY = this.y - 38;
+        const bubbleWidth = 38;
+        const bubbleHeight = 32;
 
         this.ctx.save();
         const alpha = Math.min(1, this.speechBubble.life / 30);
@@ -472,9 +480,9 @@ class Tamagotchi {
         this.ctx.fill();
         this.ctx.stroke();
 
-        this.ctx.font = '30px Arial';
+        this.ctx.font = '22px Arial';
         this.ctx.fillStyle = '#2c3e50';
-        this.ctx.fillText(this.speechBubble.emoji, bubbleX + 10, bubbleY + 32);
+        this.ctx.fillText(this.speechBubble.emoji, bubbleX + 8, bubbleY + 24);
 
         this.ctx.restore();
     }
@@ -487,7 +495,7 @@ class Tamagotchi {
         return 'neutral';
     }
 
-    drawColoredPixel(x, y, color, size = 7) {
+    drawColoredPixel(x, y, color, size = 5) {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x, y, size, size);
     }
@@ -701,51 +709,51 @@ class Tamagotchi {
     }
 
     drawDead() {
-        const cx = 100;
-        const cy = 100;
+        const cx = 75;
+        const cy = 75;
 
         this.ctx.fillStyle = '#95a5a6';
-        for (let dy = -17; dy <= 17; dy += 7) {
-            for (let dx = -17; dx <= 17; dx += 7) {
+        for (let dy = -14; dy <= 14; dy += 5) {
+            for (let dx = -14; dx <= 14; dx += 5) {
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 23) {
+                if (dist < 18) {
                     this.drawColoredPixel(cx + dx, cy + dy, '#95a5a6');
                 }
             }
         }
 
         this.ctx.fillStyle = '#2c3e50';
-        this.ctx.fillRect(cx - 10, cy - 3, 5, 5);
-        this.ctx.fillRect(cx + 7, cy - 3, 5, 5);
+        this.ctx.fillRect(cx - 8, cy - 2, 4, 4);
+        this.ctx.fillRect(cx + 5, cy - 2, 4, 4);
 
-        this.ctx.font = 'bold 24px "Space Mono"';
-        this.ctx.fillText('RIP', cx - 20, cy + 60);
+        this.ctx.font = 'bold 18px "Space Mono"';
+        this.ctx.fillText('RIP', cx - 15, cy + 45);
     }
 
     drawPoop(x, y) {
         this.ctx.fillStyle = '#8b6914';
-        this.drawColoredPixel(x - 5, y, '#6b5310', 7);
-        this.drawColoredPixel(x + 3, y, '#6b5310', 7);
-        this.drawColoredPixel(x - 2, y - 7, '#8b6914', 7);
-        this.drawColoredPixel(x - 5, y + 7, '#5a4208', 7);
-        this.drawColoredPixel(x + 3, y + 7, '#5a4208', 7);
+        this.drawColoredPixel(x - 4, y, '#6b5310', 5);
+        this.drawColoredPixel(x + 2, y, '#6b5310', 5);
+        this.drawColoredPixel(x - 1, y - 5, '#8b6914', 5);
+        this.drawColoredPixel(x - 4, y + 5, '#5a4208', 5);
+        this.drawColoredPixel(x + 2, y + 5, '#5a4208', 5);
     }
 
     drawSickIcon() {
         const cx = this.x;
-        const cy = this.y - 35;
+        const cy = this.y - 26;
 
         this.ctx.fillStyle = '#e74c3c';
-        this.ctx.fillRect(cx - 3, cy - 10, 3, 13);
-        this.ctx.fillRect(cx - 10, cy - 3, 13, 3);
-        this.ctx.fillRect(cx, cy + 7, 3, 3);
+        this.ctx.fillRect(cx - 2, cy - 8, 2, 10);
+        this.ctx.fillRect(cx - 8, cy - 2, 10, 2);
+        this.ctx.fillRect(cx, cy + 5, 2, 2);
     }
 
     drawParticle(p) {
         this.ctx.save();
         this.ctx.globalAlpha = p.life / 60;
-        this.ctx.font = '20px Arial';
-        this.ctx.fillText(p.emoji, p.x - 10, p.y);
+        this.ctx.font = 'bold 16px Arial';
+        this.ctx.fillText(p.emoji, p.x - 8, p.y);
         this.ctx.restore();
     }
 

@@ -39,88 +39,83 @@
     </style>
 </head>
 <body class="bg-[#e8e8e8] min-h-screen flex items-center justify-center font-mono p-5">
-    <div class="w-full max-w-2xl">
+    <div class="w-full max-w-xl">
         <!-- Header -->
-        <div class="bg-black text-white p-6 mb-8 border-4 border-black brutal-shadow-lg">
-            <h1 class="text-4xl font-bold uppercase text-center tracking-tight">TAMAGOTCHI</h1>
-            <p class="text-center text-sm mt-2 tracking-wide opacity-90">VIRTUAL PET SIMULATOR</p>
+        <div class="bg-[#4ECDC4] text-black p-4 mb-6 border-4 border-black brutal-shadow-lg">
+            <h1 class="text-3xl font-bold uppercase text-center tracking-tight">TAMAGOTCHI</h1>
+            <p class="text-center text-xs mt-1 tracking-wide opacity-90">VIRTUAL PET SIMULATOR</p>
         </div>
 
-        <!-- Device -->
-        <div class="bg-[#FFD93D] p-6 border-5 border-black brutal-shadow-lg">
+        <!-- Game Container -->
+        <div class="border-4 border-black brutal-shadow-lg">
             <!-- Screen -->
-            <div class="bg-[#C8E6C9] border-4 border-black p-5">
+            <div class="bg-[#C8E6C9] border-4 border-black p-3">
                 <!-- Sleep indicator -->
-                <div id="sleep-indicator" class="hidden bg-black text-white text-center py-2 px-4 mb-3 text-sm font-bold uppercase border-2 border-black">
+                <div id="sleep-indicator" class="hidden bg-black text-white text-center py-1 px-3 mb-2 text-xs font-bold uppercase border-2 border-black">
                     <span class="mr-2">🌙</span>
                     <span id="sleep-text">SLEEPING (10PM - 8AM)</span>
                 </div>
 
                 <!-- Status Bar -->
-                <div class="flex justify-around mb-4 p-3 bg-white border-3 border-black">
-                    <div class="flex flex-col items-center gap-2">
-                        <span class="text-lg font-bold">♥</span>
-                        <div class="w-24 h-4 border-3 border-black bg-white">
+                <div class="flex justify-around mb-3 p-2 bg-white border-3 border-black">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-sm font-bold">♥</span>
+                        <div class="w-16 h-3 border-2 border-black bg-white">
                             <div id="hunger-fill" class="h-full bg-[#FF6B6B] transition-all duration-300"></div>
                         </div>
                     </div>
-                    <div class="flex flex-col items-center gap-2">
-                        <span class="text-lg font-bold">☺</span>
-                        <div class="w-24 h-4 border-3 border-black bg-white">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-sm font-bold">☺</span>
+                        <div class="w-16 h-3 border-2 border-black bg-white">
                             <div id="happiness-fill" class="h-full bg-[#FFD93D] transition-all duration-300"></div>
                         </div>
                     </div>
-                    <div class="flex flex-col items-center gap-2">
-                        <span class="text-lg font-bold">+</span>
-                        <div class="w-24 h-4 border-3 border-black bg-white">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-sm font-bold">+</span>
+                        <div class="w-16 h-3 border-2 border-black bg-white">
                             <div id="health-fill" class="h-full bg-[#4ECDC4] transition-all duration-300"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Pet Area -->
-                <div class="bg-white border-3 border-black p-6 min-h-[300px] flex flex-col items-center justify-center gap-4">
-                    <canvas id="petCanvas" width="200" height="200" class="pixel-art"></canvas>
+                <div class="bg-white border-3 border-black p-4 min-h-[200px] flex flex-col items-center justify-center gap-2">
+                    <canvas id="petCanvas" width="150" height="150" class="pixel-art"></canvas>
                     <div class="text-center font-bold">
-                        <p id="pet-name" class="text-xl text-black uppercase tracking-wider">TAMA</p>
-                        <p id="pet-age" class="text-sm text-gray-700 mt-1">AGE: 0</p>
-                        <p id="pet-stage" class="text-sm text-gray-700">EGG</p>
+                        <p id="pet-name" class="text-lg text-black uppercase tracking-wider">TAMA</p>
+                        <p id="pet-age" class="text-xs text-gray-700 mt-1">AGE: 0</p>
+                        <p id="pet-stage" class="text-xs text-gray-700">EGG</p>
                     </div>
                 </div>
 
                 <!-- Status Message -->
-                <div id="status-message" class="mt-4 p-3 bg-white border-3 border-black min-h-[40px] text-center text-sm font-bold uppercase tracking-wide"></div>
+                <div id="status-message" class="mt-3 p-2 bg-white border-3 border-black min-h-[32px] text-center text-xs font-bold uppercase tracking-wide"></div>
             </div>
 
             <!-- Game Controls -->
-            <div class="flex gap-3 mt-5 justify-center">
-                <button id="pause-btn" class="bg-black border-3 border-black px-5 py-3 text-sm font-bold text-white uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-2">
+            <div class="flex gap-2 mt-3 p-3 justify-center bg-[#C8E6C9] border-t-4 border-black">
+                <button id="pause-btn" class="bg-black border-3 border-black px-4 py-2 text-xs font-bold text-white uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-2">
                     <span id="pause-icon">⏸</span>
                     <span id="pause-label">PAUSE</span>
                 </button>
-                <button id="new-game-btn" class="bg-black border-3 border-black px-5 py-3 text-sm font-bold text-white uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-2">
-                    <span>↻</span>
+                <button id="new-game-btn" class="bg-black border-3 border-black px-4 py-2 text-xs font-bold text-white uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all">
                     <span>NEW GAME</span>
                 </button>
             </div>
 
             <!-- Action Buttons -->
-            <div class="grid grid-cols-2 gap-4 mt-5">
-                <button id="feed-btn" class="bg-white border-4 border-black p-5 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex flex-col items-center gap-2">
-                    <span class="text-3xl">🍖</span>
-                    <span class="text-xs uppercase tracking-wider">FEED</span>
+            <div class="grid grid-cols-2 gap-3 p-3 bg-[#C8E6C9]">
+                <button id="feed-btn" class="bg-white border-3 border-black p-3 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all text-xs uppercase tracking-wider">
+                    FEED
                 </button>
-                <button id="play-btn" class="bg-white border-4 border-black p-5 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex flex-col items-center gap-2">
-                    <span class="text-3xl">⚾</span>
-                    <span class="text-xs uppercase tracking-wider">PLAY</span>
+                <button id="play-btn" class="bg-white border-3 border-black p-3 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all text-xs uppercase tracking-wider">
+                    PLAY
                 </button>
-                <button id="clean-btn" class="bg-white border-4 border-black p-5 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex flex-col items-center gap-2">
-                    <span class="text-3xl">💧</span>
-                    <span class="text-xs uppercase tracking-wider">CLEAN</span>
+                <button id="clean-btn" class="bg-white border-3 border-black p-3 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all text-xs uppercase tracking-wider">
+                    CLEAN
                 </button>
-                <button id="medicine-btn" class="bg-white border-4 border-black p-5 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex flex-col items-center gap-2">
-                    <span class="text-3xl">💊</span>
-                    <span class="text-xs uppercase tracking-wider">HEAL</span>
+                <button id="medicine-btn" class="bg-white border-3 border-black p-3 font-bold hover:-translate-x-1 hover:-translate-y-1 brutal-shadow active:translate-x-0 active:translate-y-0 active:shadow-none transition-all text-xs uppercase tracking-wider">
+                    HEAL
                 </button>
             </div>
         </div>
@@ -128,11 +123,11 @@
 
     <!-- Name Modal -->
     <div id="name-modal" class="hidden fixed inset-0 bg-black/80 z-50 items-center justify-center">
-        <div class="bg-white p-10 border-5 border-black text-center brutal-shadow-lg max-w-md mx-4">
-            <h2 class="font-mono text-black mb-6 text-2xl font-bold uppercase tracking-tight">NAME YOUR PET</h2>
+        <div class="bg-white p-6 border-4 border-black text-center brutal-shadow-lg max-w-sm mx-4">
+            <h2 class="font-mono text-black mb-4 text-xl font-bold uppercase tracking-tight">NAME YOUR PET</h2>
             <input type="text" id="pet-name-input" maxlength="12" placeholder="ENTER NAME..."
-                class="font-mono text-lg px-4 py-4 border-4 border-black w-full text-center font-bold mb-6 bg-white focus:outline-none uppercase tracking-wider">
-            <button id="name-submit-btn" class="font-mono text-sm font-bold px-10 py-4 bg-black text-white border-4 border-black uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all w-full">
+                class="font-mono text-sm px-3 py-3 border-3 border-black w-full text-center font-bold mb-4 bg-white focus:outline-none uppercase tracking-wider">
+            <button id="name-submit-btn" class="font-mono text-xs font-bold px-6 py-3 bg-black text-white border-3 border-black uppercase tracking-wider hover:-translate-x-1 hover:-translate-y-1 brutal-shadow-sm active:translate-x-0 active:translate-y-0 active:shadow-none transition-all w-full">
                 START GAME
             </button>
         </div>
