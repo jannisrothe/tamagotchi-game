@@ -119,6 +119,12 @@ body {
     margin: 2px 0;
 }
 
+.pet-name-display {
+    font-size: 14px;
+    color: #ff6b9d;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 #status-message {
     margin-top: 10px;
     padding: 8px;
@@ -214,6 +220,95 @@ body {
     color: #2c3e50;
 }
 
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    padding: 30px;
+    border-radius: 20px;
+    border: 4px solid #2c3e50;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h2 {
+    font-family: 'Courier New', monospace;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+#pet-name-input {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    padding: 12px;
+    border: 3px solid #2c3e50;
+    border-radius: 8px;
+    width: 200px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    background: #fff;
+}
+
+#pet-name-input:focus {
+    outline: none;
+    border-color: #ff6b9d;
+    box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.2);
+}
+
+.modal-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 12px 30px;
+    background: linear-gradient(145deg, #ff6b9d, #c06c84);
+    color: white;
+    border: 3px solid #2c3e50;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.1s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.modal-btn:hover {
+    background: linear-gradient(145deg, #ff85b1, #d07a92);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.25);
+}
+
+.modal-btn:active {
+    transform: translateY(0);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 @media (max-width: 480px) {
     .device {
         max-width: 100%;
@@ -221,5 +316,9 @@ body {
 
     .controls {
         grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        margin: 20px;
     }
 }

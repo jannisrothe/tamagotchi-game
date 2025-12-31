@@ -34,7 +34,7 @@
                 <div class="pet-area">
                     <canvas id="petCanvas" width="120" height="120"></canvas>
                     <div class="info">
-                        <p id="pet-name">TAMA</p>
+                        <p id="pet-name" class="pet-name-display">TAMA</p>
                         <p id="pet-age">Age: 0</p>
                         <p id="pet-stage">EGG</p>
                     </div>
@@ -72,6 +72,14 @@
                     <span class="btn-label">HEAL</span>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <div id="name-modal" class="modal">
+        <div class="modal-content">
+            <h2>Name Your Tamagotchi!</h2>
+            <input type="text" id="pet-name-input" maxlength="12" placeholder="Enter name...">
+            <button id="name-submit-btn" class="modal-btn">Start Game</button>
         </div>
     </div>
 
