@@ -15,10 +15,10 @@ class Tamagotchi {
         this.isSleeping = false;
         this.petName = 'TAMA';
 
-        this.x = 100;
-        this.y = 100;
-        this.targetX = 100;
-        this.targetY = 100;
+        this.x = 150;
+        this.y = 150;
+        this.targetX = 150;
+        this.targetY = 150;
         this.facingRight = true;
         this.isBlinking = false;
 
@@ -29,6 +29,8 @@ class Tamagotchi {
         this.lastMood = 'neutral';
         this.isInteracting = false;
         this.interactionQueue = [];
+        this.interactionItem = null;
+        this.savedPosition = { x: 150, y: 150 };
 
         this.intervals = [];
 
@@ -152,7 +154,7 @@ class Tamagotchi {
         this.stage = newStage;
         this.showMessage(`${this.petName} evolved to ${newStage.toUpperCase()}!`);
         this.createParticles(this.x, this.y - 20, '★', 4, 'fall');
-        this.showSpeechBubble('🎉');
+        this.showSpeechBubble('party');
     }
 
     animate() {
@@ -166,8 +168,8 @@ class Tamagotchi {
     randomMove() {
         if (!this.isAlive || this.stage === 'egg' || this.isPaused || this.isSleeping || this.isInteracting) return;
 
-        this.targetX = 40 + Math.random() * 120;
-        this.targetY = 70 + Math.random() * 100;
+        this.targetX = 60 + Math.random() * 180;
+        this.targetY = 100 + Math.random() * 150;
     }
 
     updateMovement() {
@@ -199,23 +201,24 @@ class Tamagotchi {
 
         if (Math.random() < 0.4) {
             this.poops.push({
-                x: 40 + Math.random() * 120,
-                y: 150 + Math.random() * 40
+                x: 60 + Math.random() * 180,
+                y: 230 + Math.random() * 50
             });
         }
     }
 
-    createParticles(x, y, emoji, count, type = 'fall') {
+    createParticles(x, y, emoji, count, type = 'fall', targetX = null) {
         for (let i = 0; i < count; i++) {
             if (type === 'fall') {
                 this.particleQueue.push({
-                    x: 100,
+                    x: targetX !== null ? targetX : 150,
                     y: -10,
                     vx: 0,
                     vy: 1.5,
-                    life: 80,
+                    life: 120,
                     emoji: emoji,
-                    targetY: y
+                    targetY: y,
+                    targetX: targetX
                 });
             } else {
                 this.particleQueue.push({
@@ -243,17 +246,109 @@ class Tamagotchi {
         };
     }
 
+    draw8BitEmoji(ctx, emoji, x, y, size = 20) {
+        const pixelSize = Math.floor(size / 5);
+
+        ctx.save();
+
+        if (emoji === 'happy' || emoji === '😄' || emoji === '😋' || emoji === '😊') {
+            // Yellow circle face
+            ctx.fillStyle = '#FFD93D';
+            for (let dy = -2; dy <= 2; dy++) {
+                for (let dx = -2; dx <= 2; dx++) {
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 2.5) {
+                        ctx.fillRect(x + dx * pixelSize, y + dy * pixelSize, pixelSize, pixelSize);
+                    }
+                }
+            }
+            // Eyes
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x - pixelSize, y - pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x + pixelSize, y - pixelSize, pixelSize, pixelSize);
+            // Smile
+            ctx.fillRect(x - pixelSize, y + pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x, y + pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x + pixelSize, y + pixelSize, pixelSize, pixelSize);
+        } else if (emoji === 'sad' || emoji === '😢') {
+            // Blue-gray circle
+            ctx.fillStyle = '#95a5a6';
+            for (let dy = -2; dy <= 2; dy++) {
+                for (let dx = -2; dx <= 2; dx++) {
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 2.5) {
+                        ctx.fillRect(x + dx * pixelSize, y + dy * pixelSize, pixelSize, pixelSize);
+                    }
+                }
+            }
+            // Eyes
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x - pixelSize, y - pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x + pixelSize, y - pixelSize, pixelSize, pixelSize);
+            // Frown
+            ctx.fillRect(x - pixelSize, y + 2*pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x, y + pixelSize * 1.5, pixelSize, pixelSize);
+            ctx.fillRect(x + pixelSize, y + 2*pixelSize, pixelSize, pixelSize);
+        } else if (emoji === 'sick' || emoji === '🤢') {
+            // Green circle
+            ctx.fillStyle = '#a8d5ba';
+            for (let dy = -2; dy <= 2; dy++) {
+                for (let dx = -2; dx <= 2; dx++) {
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 2.5) {
+                        ctx.fillRect(x + dx * pixelSize, y + dy * pixelSize, pixelSize, pixelSize);
+                    }
+                }
+            }
+            // X eyes
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x - 2*pixelSize, y - pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x - pixelSize, y, pixelSize, pixelSize);
+            ctx.fillRect(x + pixelSize, y, pixelSize, pixelSize);
+            ctx.fillRect(x + 2*pixelSize, y - pixelSize, pixelSize, pixelSize);
+        } else if (emoji === 'neutral' || emoji === '😐' || emoji === '😌') {
+            // Gray circle
+            ctx.fillStyle = '#e0e0e0';
+            for (let dy = -2; dy <= 2; dy++) {
+                for (let dx = -2; dx <= 2; dx++) {
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 2.5) {
+                        ctx.fillRect(x + dx * pixelSize, y + dy * pixelSize, pixelSize, pixelSize);
+                    }
+                }
+            }
+            // Eyes
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x - pixelSize, y - pixelSize, pixelSize, pixelSize);
+            ctx.fillRect(x + pixelSize, y - pixelSize, pixelSize, pixelSize);
+            // Straight line mouth
+            ctx.fillRect(x - pixelSize, y + pixelSize, 3 * pixelSize, pixelSize);
+        } else if (emoji === 'party' || emoji === '🎉') {
+            // Rainbow star
+            const colors = ['#FF6B6B', '#FFD93D', '#4ECDC4'];
+            colors.forEach((color, i) => {
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y - (2-i)*pixelSize, pixelSize, pixelSize);
+                ctx.fillRect(x - (2-i)*pixelSize, y, pixelSize, pixelSize);
+                ctx.fillRect(x + (2-i)*pixelSize, y, pixelSize, pixelSize);
+                ctx.fillRect(x, y + (2-i)*pixelSize, pixelSize, pixelSize);
+            });
+        }
+
+        ctx.restore();
+    }
+
     checkMoodChange() {
         if (!this.isAlive || this.isPaused || this.stage === 'egg' || this.isSleeping) return;
 
         const currentMood = this.getMood();
         if (currentMood !== this.lastMood) {
             const moodEmojis = {
-                'happy': '😊',
-                'sad': '😢',
-                'hungry': '😋',
-                'sick': '🤢',
-                'bored': '😐'
+                'happy': 'happy',
+                'sad': 'sad',
+                'hungry': 'happy',
+                'sick': 'sick',
+                'bored': 'neutral'
             };
             if (moodEmojis[currentMood]) {
                 this.showSpeechBubble(moodEmojis[currentMood]);
@@ -343,60 +438,140 @@ class Tamagotchi {
     feed() {
         if (!this.isAlive || this.isPaused || this.isSleeping || this.isInteracting) return;
 
+        // Immediately lock interactions
         this.isInteracting = true;
         this.showMessage(`Fed ${this.petName}!`);
 
-        // Drop food particle slowly
-        this.createParticles(this.x, this.y, '●', 1, 'fall');
+        // Random food landing position
+        const foodX = 80 + Math.random() * 140;
+        const foodY = 240;
 
-        // Wait for food to arrive, then eat
+        // Store food as interaction item
+        this.interactionItem = { x: foodX, y: foodY, type: 'food', eaten: false };
+
+        // Drop food to ground
+        this.createParticles(foodX, foodY, '●', 1, 'fall', foodX);
+
+        // Wait for food to land (2 seconds)
         setTimeout(() => {
-            this.showSpeechBubble('😋');
-            // First bite
-            setTimeout(() => {
-                this.hunger = Math.min(100, this.hunger + 20);
-                this.updateUI();
-                // Second bite
-                setTimeout(() => {
-                    this.hunger = Math.min(100, this.hunger + 20);
-                    this.updateUI();
-                    // Finish interaction
+            // Save current position
+            this.savedPosition = { x: this.x, y: this.y };
+
+            // Walk to food
+            this.targetX = foodX;
+            this.targetY = foodY - 20;
+
+            // Wait for Tamagotchi to reach food (check every 100ms)
+            const walkInterval = setInterval(() => {
+                const distanceToFood = Math.sqrt(
+                    Math.pow(this.x - this.targetX, 2) +
+                    Math.pow(this.y - this.targetY, 2)
+                );
+
+                if (distanceToFood < 5) {
+                    clearInterval(walkInterval);
+
+                    // Remove food particle
+                    this.interactionItem.eaten = true;
+                    this.particles = [];
+
+                    // Eating animation
+                    this.showSpeechBubble('happy');
+
+                    // First bite
                     setTimeout(() => {
-                        this.isInteracting = false;
-                        this.saveGame();
-                    }, 800);
-                }, 600);
-            }, 400);
-        }, 1200);
+                        this.hunger = Math.min(100, this.hunger + 20);
+                        this.updateUI();
+
+                        // Second bite
+                        setTimeout(() => {
+                            this.hunger = Math.min(100, this.hunger + 20);
+                            this.updateUI();
+
+                            // Satisfied reaction
+                            setTimeout(() => {
+                                // Clear interaction item
+                                this.interactionItem = null;
+
+                                // Return to random movement
+                                setTimeout(() => {
+                                    this.isInteracting = false;
+                                    this.saveGame();
+                                }, 500);
+                            }, 1000);
+                        }, 600);
+                    }, 400);
+                }
+            }, 100);
+        }, 2000);
     }
 
     play() {
         if (!this.isAlive || this.isPaused || this.isSleeping || this.isInteracting) return;
 
+        // Immediately lock interactions
         this.isInteracting = true;
         this.showMessage(`Played with ${this.petName}!`);
 
-        // Drop ball
-        this.createParticles(this.x, this.y, '○', 1, 'fall');
+        // Random ball landing position
+        const ballX = 80 + Math.random() * 140;
+        const ballY = 240;
 
-        // Wait for ball to arrive, then play
+        // Store ball as interaction item
+        this.interactionItem = { x: ballX, y: ballY, type: 'ball', bounces: 0 };
+
+        // Drop ball to ground
+        this.createParticles(ballX, ballY, '○', 1, 'fall', ballX);
+
+        // Wait for ball to land
         setTimeout(() => {
-            this.showSpeechBubble('😄');
-            this.happiness = Math.min(100, this.happiness + 20);
-            this.hunger = Math.max(0, this.hunger - 2);
-            this.updateUI();
-            // Continue playing
-            setTimeout(() => {
-                this.happiness = Math.min(100, this.happiness + 20);
-                this.hunger = Math.max(0, this.hunger - 3);
-                this.updateUI();
-                // Finish interaction
-                setTimeout(() => {
-                    this.isInteracting = false;
-                    this.saveGame();
-                }, 800);
-            }, 700);
-        }, 1200);
+            // Walk to ball
+            this.targetX = ballX;
+            this.targetY = ballY - 20;
+
+            // Wait for Tamagotchi to reach ball
+            const walkInterval = setInterval(() => {
+                const distanceToBall = Math.sqrt(
+                    Math.pow(this.x - this.targetX, 2) +
+                    Math.pow(this.y - this.targetY, 2)
+                );
+
+                if (distanceToBall < 5) {
+                    clearInterval(walkInterval);
+
+                    // Remove ball particle
+                    this.particles = [];
+
+                    // Playing animation
+                    this.showSpeechBubble('happy');
+
+                    // First bounce/play
+                    setTimeout(() => {
+                        this.happiness = Math.min(100, this.happiness + 20);
+                        this.hunger = Math.max(0, this.hunger - 2);
+                        this.updateUI();
+
+                        // Second bounce/play
+                        setTimeout(() => {
+                            this.happiness = Math.min(100, this.happiness + 20);
+                            this.hunger = Math.max(0, this.hunger - 3);
+                            this.updateUI();
+
+                            // Happy reaction
+                            setTimeout(() => {
+                                this.interactionItem = null;
+
+                                // Return to normal
+                                setTimeout(() => {
+                                    this.isInteracting = false;
+                                    this.saveGame();
+                                }, 500);
+                            }, 1000);
+                        }, 700);
+                    }, 400);
+                }
+            }, 100);
+        }, 2000);
     }
 
     clean() {
@@ -413,7 +588,7 @@ class Tamagotchi {
                 this.poops = [];
                 this.health = Math.min(100, this.health + 15);
                 this.updateUI();
-                this.showSpeechBubble('😌');
+                this.showSpeechBubble('neutral');
                 setTimeout(() => {
                     this.health = Math.min(100, this.health + 15);
                     this.updateUI();
@@ -440,7 +615,7 @@ class Tamagotchi {
             this.createParticles(this.x, this.y, '+', 1, 'fall');
 
             setTimeout(() => {
-                this.showSpeechBubble('😊');
+                this.showSpeechBubble('happy');
                 this.health = Math.min(100, this.health + 25);
                 this.updateUI();
                 setTimeout(() => {
@@ -519,10 +694,10 @@ class Tamagotchi {
     }
 
     drawSpeechBubble() {
-        const bubbleX = this.x + 42;
-        const bubbleY = this.y - 50;
-        const bubbleWidth = 50;
-        const bubbleHeight = 42;
+        const bubbleX = this.x + 55;
+        const bubbleY = this.y - 65;
+        const bubbleWidth = 60;
+        const bubbleHeight = 50;
 
         this.ctx.save();
         const alpha = Math.min(1, this.speechBubble.life / 30);
@@ -530,24 +705,23 @@ class Tamagotchi {
 
         this.ctx.fillStyle = '#fff';
         this.ctx.strokeStyle = '#2c3e50';
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = 3;
 
         this.ctx.beginPath();
-        this.ctx.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 8);
+        this.ctx.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 10);
         this.ctx.fill();
         this.ctx.stroke();
 
         this.ctx.beginPath();
-        this.ctx.moveTo(bubbleX, bubbleY + bubbleHeight - 8);
-        this.ctx.lineTo(bubbleX - 8, bubbleY + bubbleHeight + 8);
-        this.ctx.lineTo(bubbleX + 8, bubbleY + bubbleHeight);
+        this.ctx.moveTo(bubbleX, bubbleY + bubbleHeight - 10);
+        this.ctx.lineTo(bubbleX - 10, bubbleY + bubbleHeight + 12);
+        this.ctx.lineTo(bubbleX + 10, bubbleY + bubbleHeight);
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
 
-        this.ctx.font = '30px Arial';
-        this.ctx.fillStyle = '#2c3e50';
-        this.ctx.fillText(this.speechBubble.emoji, bubbleX + 10, bubbleY + 32);
+        // Draw 8-bit emoji inside bubble
+        this.draw8BitEmoji(this.ctx, this.speechBubble.emoji, bubbleX + 30, bubbleY + 25, 24);
 
         this.ctx.restore();
     }
@@ -560,7 +734,7 @@ class Tamagotchi {
         return 'neutral';
     }
 
-    drawColoredPixel(x, y, color, size = 7) {
+    drawColoredPixel(x, y, color, size = 10) {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x, y, size, size);
     }
@@ -774,51 +948,51 @@ class Tamagotchi {
     }
 
     drawDead() {
-        const cx = 100;
-        const cy = 100;
+        const cx = 150;
+        const cy = 150;
 
         this.ctx.fillStyle = '#95a5a6';
-        for (let dy = -18; dy <= 18; dy += 7) {
-            for (let dx = -18; dx <= 18; dx += 7) {
+        for (let dy = -25; dy <= 25; dy += 10) {
+            for (let dx = -25; dx <= 25; dx += 10) {
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 24) {
+                if (dist < 33) {
                     this.drawColoredPixel(cx + dx, cy + dy, '#95a5a6');
                 }
             }
         }
 
         this.ctx.fillStyle = '#2c3e50';
-        this.ctx.fillRect(cx - 10, cy - 3, 5, 5);
-        this.ctx.fillRect(cx + 7, cy - 3, 5, 5);
+        this.ctx.fillRect(cx - 13, cy - 4, 7, 7);
+        this.ctx.fillRect(cx + 9, cy - 4, 7, 7);
 
-        this.ctx.font = 'bold 24px "Space Mono"';
-        this.ctx.fillText('RIP', cx - 20, cy + 60);
+        this.ctx.font = 'bold 32px "Space Mono"';
+        this.ctx.fillText('RIP', cx - 27, cy + 80);
     }
 
     drawPoop(x, y) {
         this.ctx.fillStyle = '#8b6914';
-        this.drawColoredPixel(x - 5, y, '#6b5310', 7);
-        this.drawColoredPixel(x + 3, y, '#6b5310', 7);
-        this.drawColoredPixel(x - 2, y - 7, '#8b6914', 7);
-        this.drawColoredPixel(x - 5, y + 7, '#5a4208', 7);
-        this.drawColoredPixel(x + 3, y + 7, '#5a4208', 7);
+        this.drawColoredPixel(x - 7, y, '#6b5310', 10);
+        this.drawColoredPixel(x + 4, y, '#6b5310', 10);
+        this.drawColoredPixel(x - 3, y - 10, '#8b6914', 10);
+        this.drawColoredPixel(x - 7, y + 10, '#5a4208', 10);
+        this.drawColoredPixel(x + 4, y + 10, '#5a4208', 10);
     }
 
     drawSickIcon() {
         const cx = this.x;
-        const cy = this.y - 35;
+        const cy = this.y - 48;
 
         this.ctx.fillStyle = '#e74c3c';
-        this.ctx.fillRect(cx - 3, cy - 10, 3, 13);
-        this.ctx.fillRect(cx - 10, cy - 3, 13, 3);
-        this.ctx.fillRect(cx, cy + 7, 3, 3);
+        this.ctx.fillRect(cx - 4, cy - 13, 4, 17);
+        this.ctx.fillRect(cx - 13, cy - 4, 17, 4);
+        this.ctx.fillRect(cx, cy + 9, 4, 4);
     }
 
     drawParticle(p) {
         this.ctx.save();
         this.ctx.globalAlpha = p.life / 60;
-        this.ctx.font = 'bold 20px Arial';
-        this.ctx.fillText(p.emoji, p.x - 10, p.y);
+        this.ctx.font = 'bold 28px Arial';
+        this.ctx.fillText(p.emoji, p.x - 14, p.y);
         this.ctx.restore();
     }
 
