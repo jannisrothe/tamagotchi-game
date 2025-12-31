@@ -7,6 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Game Libraries -->
+    <script src="https://unpkg.com/kaboom@3000.0.1/dist/kaboom.js"></script>
+    <script src="https://unpkg.com/jsfxr@1.0.0/dist/jsfxr.min.js"></script>
+    <script src="https://unpkg.com/tinymusic@1.0.0/TinyMusic.js"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -83,7 +89,7 @@
 
                 <!-- Pet Area -->
                 <div class="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur rounded-3xl toy-shadow-inner p-2 flex flex-col items-center justify-center gap-1.5">
-                    <canvas id="petCanvas" width="300" height="300" class="pixel-art"></canvas>
+                    <div id="game-container" class="rounded-xl overflow-hidden"></div>
                     <div class="text-center font-bold pb-1">
                         <p id="pet-name" class="text-sm text-black uppercase tracking-wider">TAMA</p>
                         <p id="pet-age" class="text-[9px] text-gray-600">AGE: 0d 0h 0m</p>
