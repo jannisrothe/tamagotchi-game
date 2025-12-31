@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamagotchi - Virtual Pet</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="device">
+            <div class="screen">
+                <div class="status-bar">
+                    <div class="stat">
+                        <span class="icon">♥</span>
+                        <div class="meter">
+                            <div class="fill" id="hunger-fill"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span class="icon">☺</span>
+                        <div class="meter">
+                            <div class="fill" id="happiness-fill"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span class="icon">+</span>
+                        <div class="meter">
+                            <div class="fill" id="health-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pet-area">
+                    <canvas id="petCanvas" width="120" height="120"></canvas>
+                    <div class="info">
+                        <p id="pet-name">TAMA</p>
+                        <p id="pet-age">Age: 0</p>
+                        <p id="pet-stage">EGG</p>
+                    </div>
+                </div>
+
+                <div id="status-message"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="feed-btn" title="Feed">
+                    <span class="btn-icon">🍖</span>
+                    <span class="btn-label">FEED</span>
+                </button>
+                <button class="btn" id="play-btn" title="Play">
+                    <span class="btn-icon">⚾</span>
+                    <span class="btn-label">PLAY</span>
+                </button>
+                <button class="btn" id="clean-btn" title="Clean">
+                    <span class="btn-icon">💧</span>
+                    <span class="btn-label">CLEAN</span>
+                </button>
+                <button class="btn" id="medicine-btn" title="Medicine">
+                    <span class="btn-icon">💊</span>
+                    <span class="btn-label">HEAL</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #000;
+}
+
+.container {
+    padding: 20px;
+}
+
+.device {
+    background: #2a2a2a;
+    border-radius: 30px;
+    padding: 20px;
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.1);
+    max-width: 400px;
+}
+
+.screen {
+    background: #9ca89e;
+    border: 4px solid #000;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+.status-bar {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+    padding: 8px;
+    background: #fff;
+    border: 2px solid #000;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.icon {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.meter {
+    width: 80px;
+    height: 12px;
+    border: 2px solid #000;
+    background: #fff;
+    position: relative;
+}
+
+.fill {
+    height: 100%;
+    background: #000;
+    transition: width 0.3s;
+}
+
+.pet-area {
+    background: #fff;
+    border: 2px solid #000;
+    padding: 15px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+#petCanvas {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+.info {
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.info p {
+    margin: 2px 0;
+}
+
+#status-message {
+    margin-top: 10px;
+    padding: 8px;
+    background: #fff;
+    border: 2px solid #000;
+    min-height: 30px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn {
+    background: #e0e0e0;
+    border: 3px solid #000;
+    border-radius: 8px;
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn:hover {
+    background: #fff;
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-icon {
+    font-size: 24px;
+    filter: grayscale(100%);
+}
+
+.btn-label {
+    font-size: 11px;
+}
+
+@media (max-width: 480px) {
+    .device {
+        max-width: 100%;
+    }
+
+    .controls {
+        grid-template-columns: 1fr;
+    }
+}
