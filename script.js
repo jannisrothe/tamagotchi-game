@@ -5,9 +5,9 @@
 const canvas = document.createElement('canvas');
 canvas.width = 250;
 canvas.height = 250;
-canvas.style.imageRendering = 'auto'; // Smooth rendering
+canvas.style.imageRendering = 'pixelated'; // Pixel-perfect rendering for retro aesthetic
 const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingEnabled = false; // Disable anti-aliasing for crisp pixels
 
 document.getElementById('game-container').appendChild(canvas);
 
@@ -84,6 +84,97 @@ window.addEventListener('load', () => {
 });
 
 // ==========================================
+// SPRITE LOADING
+// ==========================================
+const sprites = {
+    egg: null,
+    baby: {},
+    child: {},
+    adult: {},
+    items: {} // Item sprites (apple, ball, poop, pill, heart)
+};
+
+let spritesLoaded = false;
+
+function loadSprites() {
+    const spriteLoadPromises = [];
+
+    // Load egg
+    const eggImg = new Image();
+    eggImg.src = '/assets/sprites/tamagotchi/egg/egg-idle.png';
+    spriteLoadPromises.push(new Promise(resolve => {
+        eggImg.onload = () => {
+            sprites.egg = eggImg;
+            resolve();
+        };
+    }));
+
+    // Load baby sprites
+    const babyFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
+                        'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
+    babyFrames.forEach(frame => {
+        const img = new Image();
+        img.src = `/assets/sprites/tamagotchi/baby/${frame}.png`;
+        spriteLoadPromises.push(new Promise(resolve => {
+            img.onload = () => {
+                sprites.baby[frame] = img;
+                resolve();
+            };
+        }));
+    });
+
+    // Load child sprites
+    const childFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
+                         'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
+    childFrames.forEach(frame => {
+        const img = new Image();
+        img.src = `/assets/sprites/tamagotchi/child/${frame}.png`;
+        spriteLoadPromises.push(new Promise(resolve => {
+            img.onload = () => {
+                sprites.child[frame] = img;
+                resolve();
+            };
+        }));
+    });
+
+    // Load adult sprites
+    const adultFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
+                         'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
+    adultFrames.forEach(frame => {
+        const img = new Image();
+        img.src = `/assets/sprites/tamagotchi/adult/${frame}.png`;
+        spriteLoadPromises.push(new Promise(resolve => {
+            img.onload = () => {
+                sprites.adult[frame] = img;
+                resolve();
+            };
+        }));
+    });
+
+    // Load item sprites
+    const itemNames = ['burger', 'ball', 'poop', 'pill', 'heart'];
+    itemNames.forEach(itemName => {
+        const img = new Image();
+        img.src = `/assets/sprites/items/${itemName}.png`;
+        spriteLoadPromises.push(new Promise(resolve => {
+            img.onload = () => {
+                sprites.items[itemName] = img;
+                resolve();
+            };
+        }));
+    });
+
+    // Wait for all sprites to load
+    Promise.all(spriteLoadPromises).then(() => {
+        console.log('✓ All sprites loaded!');
+        spritesLoaded = true;
+    });
+}
+
+// Load sprites on page load
+loadSprites();
+
+// ==========================================
 // GAME STATE
 // ==========================================
 const gameState = {
@@ -128,6 +219,9 @@ let activeObjects = [];
 // ==========================================
 
 function drawTamagotchi() {
+    // Wait for sprites to load
+    if (!spritesLoaded) return;
+
     const cx = tama.x;
     const cy = tama.y + tama.bounce;
 
@@ -137,118 +231,43 @@ function drawTamagotchi() {
         ctx.scale(-1, 1);
     }
 
-    // Colors based on stage with gradients
-    const colors = {
-        egg: { primary: '#a8d8ea', secondary: '#aa96da', glow: 'rgba(168, 214, 234, 0.3)' },
-        baby: { primary: '#ffb6b9', secondary: '#fae3d9', glow: 'rgba(255, 182, 185, 0.3)' },
-        child: { primary: '#92e3a9', secondary: '#7ec4cf', glow: 'rgba(146, 227, 169, 0.3)' },
-        adult: { primary: '#ff9a56', secondary: '#ffcd38', glow: 'rgba(255, 154, 86, 0.3)' }
-    };
-    const c = colors[gameState.stage];
+    // Determine which sprite to render
+    let sprite = null;
 
     if (gameState.stage === 'egg') {
-        // Smooth egg shape with gradient
-        const gradient = ctx.createRadialGradient(0, -10, 5, 0, 0, 35);
-        gradient.addColorStop(0, c.secondary);
-        gradient.addColorStop(1, c.primary);
-
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 25, 32, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Glow effect
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = c.glow;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        // Spots
-        ctx.fillStyle = 'rgba(252, 186, 211, 0.6)';
-        ctx.beginPath();
-        ctx.arc(-8, -5, 4, 0, Math.PI * 2);
-        ctx.arc(6, -8, 3, 0, Math.PI * 2);
-        ctx.arc(-5, 8, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+        sprite = sprites.egg;
     } else {
-        // Smooth blob body with squish effect
-        const size = 30;
-        const squishX = tama.squish;
-        const squishY = 1 / tama.squish;
+        const stageSprites = sprites[gameState.stage]; // baby/child/adult
 
-        ctx.scale(squishX, squishY);
-
-        // Body gradient
-        const gradient = ctx.createRadialGradient(0, -5, 5, 0, 0, size);
-        gradient.addColorStop(0, c.secondary);
-        gradient.addColorStop(1, c.primary);
-
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(0, 0, size, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Glow
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = c.glow;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        ctx.scale(1/squishX, 1/squishY);
-
-        // Eyes
-        const eyeSize = tama.isBlinking ? 2 : 6;
-        const eyeY = tama.isBlinking ? -8 : -10;
-
-        ctx.fillStyle = '#2d3748';
-        ctx.beginPath();
-        ctx.arc(-10, eyeY, eyeSize, 0, Math.PI * 2);
-        ctx.arc(10, eyeY, eyeSize, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Eye shine
-        if (!tama.isBlinking) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.beginPath();
-            ctx.arc(-8, -12, 2, 0, Math.PI * 2);
-            ctx.arc(12, -12, 2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // Dynamic mouth based on mood
-        const avgStat = (gameState.hunger + gameState.happiness + gameState.health) / 3;
-        ctx.strokeStyle = '#2d3748';
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-
-        ctx.beginPath();
         if (tama.mouthOpen) {
-            // Open mouth (eating) - circle
-            ctx.arc(0, 5, 6, 0, Math.PI * 2);
-            ctx.fillStyle = '#1a202c';
-            ctx.fill();
-        } else if (avgStat >= 70) {
-            // Happy - big smile
-            ctx.arc(0, 0, 15, 0.3, Math.PI - 0.3);
-        } else if (avgStat >= 40) {
-            // Neutral - small smile
-            ctx.arc(0, 5, 10, 0.2, Math.PI - 0.2);
+            // Eating animation
+            const eatFrame = Math.floor(Date.now() / 200) % 4 + 1;
+            sprite = stageSprites[`eat-${eatFrame}`];
+        } else if (tama.isBlinking) {
+            // Blinking animation
+            const blinkFrame = Math.floor(Date.now() / 100) % 3 + 1;
+            sprite = stageSprites[`blink-${blinkFrame}`];
         } else {
-            // Sad - frown
-            ctx.arc(0, 15, 12, Math.PI + 0.3, Math.PI * 2 - 0.3);
-        }
-        ctx.stroke();
+            // Show mood-based sprite or idle animation
+            const avgStat = (gameState.hunger + gameState.happiness + gameState.health) / 3;
+            const mood = avgStat >= 70 ? 'happy' : avgStat >= 40 ? 'neutral' : 'sad';
 
-        // Blush when happy
-        if (avgStat >= 70 && !tama.mouthOpen) {
-            ctx.fillStyle = 'rgba(255, 107, 157, 0.3)';
-            ctx.beginPath();
-            ctx.ellipse(-18, 2, 5, 3, 0, 0, Math.PI * 2);
-            ctx.ellipse(18, 2, 5, 3, 0, 0, Math.PI * 2);
-            ctx.fill();
+            if (stageSprites[mood]) {
+                sprite = stageSprites[mood];
+            } else {
+                // Fallback to idle animation
+                const idleFrame = Math.floor(Date.now() / 150) % 4 + 1;
+                sprite = stageSprites[`idle-${idleFrame}`];
+            }
         }
+    }
+
+    // Render sprite (scaled 2.5x to match original size)
+    if (sprite) {
+        const scale = 2.5;
+        const w = sprite.width * scale * tama.squish;
+        const h = sprite.height * scale / tama.squish;
+        ctx.drawImage(sprite, -w/2, -h/2, w, h);
     }
 
     ctx.restore();
@@ -279,53 +298,27 @@ function drawTamagotchi() {
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Smooth heart
-        ctx.fillStyle = '#ff1744';
-        ctx.beginPath();
-        const heartScale = 0.6 + Math.sin(tama.heartTimer / 10) * 0.1;
-        ctx.scale(heartScale, heartScale);
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(-5, -5, -10, -2, -10, 5);
-        ctx.bezierCurveTo(-10, 10, 0, 15, 0, 15);
-        ctx.bezierCurveTo(0, 15, 10, 10, 10, 5);
-        ctx.bezierCurveTo(10, -2, 5, -5, 0, 0);
-        ctx.fill();
-
-        // Heart shine
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.beginPath();
-        ctx.arc(-2, 0, 2, 0, Math.PI * 2);
-        ctx.fill();
+        // Pixel art heart sprite
+        if (sprites.items.heart) {
+            const heartScale = 0.6 + Math.sin(tama.heartTimer / 10) * 0.1;
+            ctx.save();
+            ctx.scale(heartScale, heartScale);
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(sprites.items.heart, -8, -8, 16, 16);
+            ctx.restore();
+        }
 
         ctx.restore();
     }
 }
 
 function drawPoop(poop) {
-    ctx.save();
-    ctx.translate(poop.x, poop.y);
-
-    // Smooth poop with gradient
-    const gradient = ctx.createRadialGradient(0, -5, 2, 0, 0, 12);
-    gradient.addColorStop(0, '#8b6914');
-    gradient.addColorStop(1, '#6b5310');
-
-    ctx.fillStyle = gradient;
-
-    // Swirl shape
-    ctx.beginPath();
-    ctx.arc(-5, 2, 6, 0, Math.PI * 2);
-    ctx.arc(5, 2, 6, 0, Math.PI * 2);
-    ctx.arc(0, -5, 7, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-    ctx.beginPath();
-    ctx.ellipse(0, 10, 10, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
+    if (sprites.items.poop) {
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(sprites.items.poop, poop.x - 8, poop.y - 8, 16, 16);
+        ctx.restore();
+    }
 }
 
 // Idle bounce animation
@@ -358,8 +351,14 @@ function animate(currentTime) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Update and draw active objects (food, balls)
+    // Sort by zIndex to control draw order (higher zIndex draws in front)
+    const sortedObjects = [...activeObjects].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+
     activeObjects.forEach(obj => {
         if (obj.update) obj.update();
+    });
+
+    sortedObjects.forEach(obj => {
         if (obj.draw) obj.draw();
     });
 
@@ -502,32 +501,12 @@ function feedTamagotchi() {
         targetY: foodY,
         landed: false,
         draw() {
-            ctx.save();
-            ctx.translate(this.x, this.y);
-
-            // Food gradient (apple/fruit)
-            const gradient = ctx.createRadialGradient(-2, -2, 2, 0, 0, 10);
-            gradient.addColorStop(0, '#ff6b6b');
-            gradient.addColorStop(1, '#c92a2a');
-
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(0, 0, 8, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Highlight
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-            ctx.beginPath();
-            ctx.arc(-3, -3, 3, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.beginPath();
-            ctx.ellipse(0, 10, 8, 2, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
+            if (sprites.items.burger) {
+                ctx.save();
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(sprites.items.burger, this.x - 8, this.y - 8, 16, 16);
+                ctx.restore();
+            }
         },
         update() {
             if (!this.landed && this.y < this.targetY) {
@@ -622,40 +601,14 @@ function playWithTamagotchi() {
         bounceCount: 0,
         bounceY: 0,
         bounceVelocity: -4,
+        zIndex: 10, // Render in front of Tamagotchi
         draw() {
-            ctx.save();
-            ctx.translate(this.x, this.y);
-
-            // Ball gradient
-            const gradient = ctx.createRadialGradient(-2, -2, 2, 0, 0, 10);
-            gradient.addColorStop(0, '#fff');
-            gradient.addColorStop(1, '#e0e0e0');
-
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(0, 0, 8, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Ball highlight
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.beginPath();
-            ctx.arc(-3, -3, 3, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Ball stripes
-            ctx.strokeStyle = '#4ECDC4';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(0, 0, 5, 0, Math.PI);
-            ctx.stroke();
-
-            // Shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.beginPath();
-            ctx.ellipse(0, 10, 8, 2, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
+            if (sprites.items.ball) {
+                ctx.save();
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(sprites.items.ball, this.x - 8, this.y - 8, 16, 16);
+                ctx.restore();
+            }
         },
         update() {
             if (!this.landed && this.y < this.targetY) {
@@ -692,18 +645,19 @@ function playWithTamagotchi() {
                 // Bounce when hitting ground
                 if (this.y >= this.targetY && this.bounceVelocity > 0) {
                     this.y = this.targetY;
-                    this.bounceVelocity = -3 - (this.bounceCount * 0.5);
+                    this.bounceVelocity = -4 + (this.bounceCount * 0.3); // Gradually smaller bounces
                     this.bounceCount++;
 
-                    if (this.bounceCount === 2) {
+                    // Add happiness every 2 bounces
+                    if (this.bounceCount % 2 === 0) {
                         playSound(sounds.play);
-                        gameState.happiness = Math.min(100, gameState.happiness + 20);
-                        gameState.hunger = Math.max(0, gameState.hunger - 3);
+                        gameState.happiness = Math.min(100, gameState.happiness + 15);
+                        gameState.hunger = Math.max(0, gameState.hunger - 2);
                         updateUI();
                     }
 
-                    // Stop after 3 bounces
-                    if (this.bounceCount >= 3) {
+                    // Stop after 7 bounces
+                    if (this.bounceCount >= 7) {
                         activeObjects = activeObjects.filter(obj => obj !== ball);
                         tama.showHeart = true;
                         tama.heartTimer = 120;
@@ -759,6 +713,31 @@ function healTamagotchi() {
         gameState.isSick = false;
         playSound(sounds.heal);
         showMessage(`Healed ${gameState.petName}!`);
+
+        // Create floating pill visual
+        const pill = {
+            x: tama.x,
+            y: tama.y - 30,
+            opacity: 1,
+            floatY: 0,
+            draw() {
+                if (sprites.items.pill) {
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(sprites.items.pill, this.x - 8, this.y + this.floatY - 8, 16, 16);
+                    ctx.restore();
+                }
+            },
+            update() {
+                this.floatY -= 0.5; // Float upward
+                this.opacity -= 0.02; // Fade out
+                if (this.opacity <= 0) {
+                    activeObjects = activeObjects.filter(obj => obj !== pill);
+                }
+            }
+        };
+        activeObjects.push(pill);
 
         gameState.health = Math.min(100, gameState.health + 25);
         updateUI();
