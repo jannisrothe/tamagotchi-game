@@ -114,7 +114,7 @@ function loadSprites() {
                         'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     babyFrames.forEach(frame => {
         const img = new Image();
-        img.src = `/assets/sprites/tamagotchi/baby/${frame}.png`;
+        img.src = `./assets/sprites/tamagotchi/baby/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.baby[frame] = img;
@@ -128,7 +128,7 @@ function loadSprites() {
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     childFrames.forEach(frame => {
         const img = new Image();
-        img.src = `/assets/sprites/tamagotchi/child/${frame}.png`;
+        img.src = `./assets/sprites/tamagotchi/child/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.child[frame] = img;
@@ -142,7 +142,7 @@ function loadSprites() {
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     adultFrames.forEach(frame => {
         const img = new Image();
-        img.src = `/assets/sprites/tamagotchi/adult/${frame}.png`;
+        img.src = `./assets/sprites/tamagotchi/adult/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.adult[frame] = img;
@@ -155,7 +155,7 @@ function loadSprites() {
     const itemNames = ['burger', 'ball', 'poop', 'pill', 'heart'];
     itemNames.forEach(itemName => {
         const img = new Image();
-        img.src = `/assets/sprites/items/${itemName}.png`;
+        img.src = `./assets/sprites/items/${itemName}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.items[itemName] = img;
