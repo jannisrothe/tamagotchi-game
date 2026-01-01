@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 export default defineConfig({
+  base: '/tamagotchi-game/', // GitHub Pages base path
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
