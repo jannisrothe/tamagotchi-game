@@ -101,7 +101,7 @@ function loadSprites() {
 
     // Load egg
     const eggImg = new Image();
-    eggImg.src = '/assets/sprites/tamagotchi/egg/egg-idle.png';
+    eggImg.src = './assets/sprites/tamagotchi/egg/egg-idle.png';
     spriteLoadPromises.push(new Promise(resolve => {
         eggImg.onload = () => {
             sprites.egg = eggImg;
