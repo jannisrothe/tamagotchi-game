@@ -204,7 +204,7 @@ function generateEgg() {
 
   // Black outline (2px thick for retro look)
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, 16, 10, 13, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -265,7 +265,7 @@ function generateBabyBase(mood = 'neutral', frame = 1) {
 
   // Black outline (2px thick for retro look)
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 12, bodyRadiusY, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -279,16 +279,16 @@ function generateBabyBase(mood = 'neutral', frame = 1) {
   ctx.lineTo(16, 10);
   ctx.stroke();
 
-  // Draw HUGE eyes (12x12 pixels each!)
+  // Draw smaller eyes
   const eyeY = bodyY - 2;
 
   // Left eye
-  drawCircle(ctx, 11, eyeY, 6, COLORS.baby.eye);
-  drawCircle(ctx, 13, eyeY - 2, 2, COLORS.baby.eyeHighlight);
+  drawCircle(ctx, 11, eyeY, 3, COLORS.baby.eye);
+  drawCircle(ctx, 13, eyeY - 1, 1, COLORS.baby.eyeHighlight);
 
   // Right eye
-  drawCircle(ctx, 21, eyeY, 6, COLORS.baby.eye);
-  drawCircle(ctx, 23, eyeY - 2, 2, COLORS.baby.eyeHighlight);
+  drawCircle(ctx, 21, eyeY, 3, COLORS.baby.eye);
+  drawCircle(ctx, 23, eyeY - 1, 1, COLORS.baby.eyeHighlight);
 
   // Draw mouth based on mood
   ctx.strokeStyle = COLORS.baby.eye;
@@ -339,7 +339,7 @@ function generateBabyBlink(frame) {
 
   // Black outline (2px thick for retro look)
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 12, 12, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -357,24 +357,24 @@ function generateBabyBlink(frame) {
 
   if (frame === 1) {
     // Eyes open
-    drawCircle(ctx, 11, eyeY, 6, COLORS.baby.eye);
-    drawCircle(ctx, 13, eyeY - 2, 2, COLORS.baby.eyeHighlight);
-    drawCircle(ctx, 21, eyeY, 6, COLORS.baby.eye);
-    drawCircle(ctx, 23, eyeY - 2, 2, COLORS.baby.eyeHighlight);
+    drawCircle(ctx, 11, eyeY, 3, COLORS.baby.eye);
+    drawCircle(ctx, 13, eyeY - 1, 1, COLORS.baby.eyeHighlight);
+    drawCircle(ctx, 21, eyeY, 3, COLORS.baby.eye);
+    drawCircle(ctx, 23, eyeY - 1, 1, COLORS.baby.eyeHighlight);
   } else if (frame === 2) {
     // Half closed
     ctx.fillStyle = COLORS.baby.eye;
-    ctx.fillRect(8, eyeY, 6, 3);
-    ctx.fillRect(18, eyeY, 6, 3);
+    ctx.fillRect(9, eyeY, 4, 2);
+    ctx.fillRect(19, eyeY, 4, 2);
   } else {
     // Closed
     ctx.strokeStyle = COLORS.baby.eye;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(8, eyeY);
-    ctx.lineTo(14, eyeY);
-    ctx.moveTo(18, eyeY);
-    ctx.lineTo(24, eyeY);
+    ctx.moveTo(10, eyeY);
+    ctx.lineTo(12, eyeY);
+    ctx.moveTo(20, eyeY);
+    ctx.lineTo(22, eyeY);
     ctx.stroke();
   }
 
@@ -414,7 +414,7 @@ function generateBabyEat(frame) {
 
   // Black outline (2px thick for retro look)
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 12, 12, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -430,10 +430,10 @@ function generateBabyEat(frame) {
 
   // Draw eyes
   const eyeY = bodyY - 2;
-  drawCircle(ctx, 11, eyeY, 6, COLORS.baby.eye);
-  drawCircle(ctx, 13, eyeY - 2, 2, COLORS.baby.eyeHighlight);
-  drawCircle(ctx, 21, eyeY, 6, COLORS.baby.eye);
-  drawCircle(ctx, 23, eyeY - 2, 2, COLORS.baby.eyeHighlight);
+  drawCircle(ctx, 11, eyeY, 3, COLORS.baby.eye);
+  drawCircle(ctx, 13, eyeY - 1, 1, COLORS.baby.eyeHighlight);
+  drawCircle(ctx, 21, eyeY, 3, COLORS.baby.eye);
+  drawCircle(ctx, 23, eyeY - 1, 1, COLORS.baby.eyeHighlight);
 
   // Draw mouth based on eating frame
   ctx.fillStyle = COLORS.baby.eye;
@@ -500,7 +500,7 @@ function generateChildBase(mood = 'neutral', frame = 1) {
 
   // Black outline on body
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 7, 7 * scaleY, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -529,7 +529,7 @@ function generateChildBase(mood = 'neutral', frame = 1) {
 
   // Black outline on head
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, headY, 8, 8, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -551,12 +551,12 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.stroke();
   drawCircle(ctx, 22, headY - 12, 1.5, COLORS.child.antenna);
 
-  // Draw medium eyes (8x8 pixels - 40% of face)
+  // Draw smaller eyes
   const eyeY = headY;
-  drawCircle(ctx, 12, eyeY, 4, COLORS.child.eye);
-  drawCircle(ctx, 13, eyeY - 1, 1.5, COLORS.child.eyeHighlight);
-  drawCircle(ctx, 20, eyeY, 4, COLORS.child.eye);
-  drawCircle(ctx, 21, eyeY - 1, 1.5, COLORS.child.eyeHighlight);
+  drawCircle(ctx, 12, eyeY, 2, COLORS.child.eye);
+  drawCircle(ctx, 13, eyeY - 1, 0.8, COLORS.child.eyeHighlight);
+  drawCircle(ctx, 20, eyeY, 2, COLORS.child.eye);
+  drawCircle(ctx, 21, eyeY - 1, 0.8, COLORS.child.eyeHighlight);
 
   // Draw mouth based on mood
   ctx.strokeStyle = COLORS.child.eye;
@@ -599,7 +599,7 @@ function generateChildBlink(frame) {
 
   // Black outline on body
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 7, 7, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -625,7 +625,7 @@ function generateChildBlink(frame) {
 
   // Black outline on head
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, headY, 8, 8, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -659,7 +659,7 @@ function generateChildBlink(frame) {
     ctx.fillRect(18, eyeY, 4, 2);
   } else {
     ctx.strokeStyle = COLORS.child.eye;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(10, eyeY);
     ctx.lineTo(14, eyeY);
@@ -700,7 +700,7 @@ function generateChildEat(frame) {
 
   // Black outline on body
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 7, 7, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -726,7 +726,7 @@ function generateChildEat(frame) {
 
   // Black outline on head
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, headY, 8, 8, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -829,7 +829,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
 
   // Black outline on body
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 8, 8 * scaleY, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -857,7 +857,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
 
   // Black outline on head
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, headY, 7, 7, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -948,7 +948,7 @@ function generateAdultBlink(frame) {
 
   // Black outline on body
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 8, 8, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -974,7 +974,7 @@ function generateAdultBlink(frame) {
 
   // Black outline on head
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, headY, 7, 7, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -1013,7 +1013,7 @@ function generateAdultBlink(frame) {
     ctx.fillRect(18, eyeY, 4, 2);
   } else {
     ctx.strokeStyle = COLORS.adult.eye;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(10, eyeY);
     ctx.lineTo(14, eyeY);
@@ -1069,7 +1069,7 @@ function generateAdultEat(frame) {
 
   // Black outline on body
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 8, 8, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -1095,7 +1095,7 @@ function generateAdultEat(frame) {
 
   // Black outline on head
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, headY, 7, 7, 0, 0, Math.PI * 2);
   ctx.stroke();
@@ -1156,131 +1156,131 @@ function generateAdultEat(frame) {
 // ==================== ITEM SPRITES ====================
 
 function generateBurger() {
-  const canvas = createCanvas(16, 16);
+  const canvas = createCanvas(48, 48);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
   // Bottom bun
   ctx.fillStyle = '#8D6E63';
-  ctx.fillRect(4, 12, 8, 2);
-  ctx.fillRect(3, 13, 10, 1);
+  ctx.fillRect(12, 36, 24, 6);
+  ctx.fillRect(9, 39, 30, 3);
 
   // Patty (brown meat)
   ctx.fillStyle = '#6D4C41';
-  ctx.fillRect(4, 10, 8, 2);
-  ctx.fillRect(3, 11, 10, 1);
+  ctx.fillRect(12, 30, 24, 6);
+  ctx.fillRect(9, 33, 30, 3);
 
   // Cheese (yellow, slightly melted)
   ctx.fillStyle = '#FFC107';
-  ctx.fillRect(4, 9, 8, 1);
-  ctx.fillRect(3, 9, 1, 1);
-  ctx.fillRect(11, 9, 1, 1);
+  ctx.fillRect(12, 27, 24, 3);
+  ctx.fillRect(9, 27, 3, 3);
+  ctx.fillRect(33, 27, 3, 3);
 
   // Lettuce (green, wavy)
   ctx.fillStyle = '#4CAF50';
-  ctx.fillRect(4, 8, 8, 1);
-  ctx.fillRect(3, 8, 1, 1);
-  ctx.fillRect(6, 7, 2, 1);
-  ctx.fillRect(9, 7, 2, 1);
+  ctx.fillRect(12, 24, 24, 3);
+  ctx.fillRect(9, 24, 3, 3);
+  ctx.fillRect(18, 21, 6, 3);
+  ctx.fillRect(27, 21, 6, 3);
 
   // Top bun (brown)
   ctx.fillStyle = '#D4A574';
-  ctx.fillRect(5, 5, 6, 2);
-  ctx.fillRect(4, 6, 8, 1);
-  ctx.fillRect(6, 4, 4, 1);
+  ctx.fillRect(15, 15, 18, 6);
+  ctx.fillRect(12, 18, 24, 3);
+  ctx.fillRect(18, 12, 12, 3);
 
   // Sesame seeds (beige/white)
   ctx.fillStyle = '#F5F5DC';
-  ctx.fillRect(6, 5, 1, 1);
-  ctx.fillRect(9, 5, 1, 1);
-  ctx.fillRect(7, 6, 1, 1);
+  ctx.fillRect(18, 15, 3, 3);
+  ctx.fillRect(27, 15, 3, 3);
+  ctx.fillRect(21, 18, 3, 3);
 
   // Black outline
   ctx.fillStyle = '#000000';
   // Top outline
-  ctx.fillRect(6, 3, 4, 1);
-  ctx.fillRect(5, 4, 6, 1);
+  ctx.fillRect(18, 9, 12, 3);
+  ctx.fillRect(15, 12, 18, 3);
   // Side outlines
-  ctx.fillRect(3, 7, 1, 6);
-  ctx.fillRect(12, 7, 1, 6);
+  ctx.fillRect(9, 21, 3, 18);
+  ctx.fillRect(36, 21, 3, 18);
   // Bottom outline
-  ctx.fillRect(3, 14, 10, 1);
+  ctx.fillRect(9, 42, 30, 3);
 
   return canvas;
 }
 
 function generateBall() {
-  const canvas = createCanvas(16, 16);
+  const canvas = createCanvas(48, 48);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
   // White ball body (pixel-perfect circle)
-  drawPixelCircle(ctx, 8, 8, 5, '#FFFFFF');
+  drawPixelCircle(ctx, 24, 24, 15, '#FFFFFF');
 
   // Blue stripes/segments (pixel art style)
   ctx.fillStyle = '#2196F3';
 
   // Vertical stripe
-  ctx.fillRect(8, 4, 1, 9);
-  ctx.fillRect(7, 5, 1, 7);
-  ctx.fillRect(9, 5, 1, 7);
+  ctx.fillRect(24, 12, 3, 27);
+  ctx.fillRect(21, 15, 3, 21);
+  ctx.fillRect(27, 15, 3, 21);
 
   // Horizontal stripe
-  ctx.fillRect(4, 8, 9, 1);
-  ctx.fillRect(5, 7, 7, 1);
-  ctx.fillRect(5, 9, 7, 1);
+  ctx.fillRect(12, 24, 27, 3);
+  ctx.fillRect(15, 21, 21, 3);
+  ctx.fillRect(15, 27, 21, 3);
 
   // Light gray shading (bottom-right)
   ctx.fillStyle = '#E0E0E0';
-  ctx.fillRect(11, 10, 2, 2);
-  ctx.fillRect(10, 11, 1, 1);
+  ctx.fillRect(33, 30, 6, 6);
+  ctx.fillRect(30, 33, 3, 3);
 
   // Black outline
-  strokePixelCircle(ctx, 8, 8, 5, '#000000', 1);
+  strokePixelCircle(ctx, 24, 24, 15, '#000000', 1);
 
   return canvas;
 }
 
 function generatePoop() {
-  const canvas = createCanvas(16, 16);
+  const canvas = createCanvas(48, 48);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
   // Bottom coil (largest)
   ctx.fillStyle = '#6D4C41';
-  ctx.fillRect(5, 11, 6, 3);
-  ctx.fillRect(4, 12, 8, 2);
-  ctx.fillRect(6, 10, 4, 1);
+  ctx.fillRect(15, 33, 18, 9);
+  ctx.fillRect(12, 36, 24, 6);
+  ctx.fillRect(18, 30, 12, 3);
 
   // Middle coil
-  ctx.fillRect(6, 8, 4, 3);
-  ctx.fillRect(5, 9, 6, 2);
+  ctx.fillRect(18, 24, 12, 9);
+  ctx.fillRect(15, 27, 18, 6);
 
   // Top coil (smallest)
-  ctx.fillRect(7, 6, 2, 2);
-  ctx.fillRect(6, 6, 4, 1);
+  ctx.fillRect(21, 18, 6, 6);
+  ctx.fillRect(18, 18, 12, 3);
 
   // Light brown highlight (top of each coil)
   ctx.fillStyle = '#8D6E63';
-  ctx.fillRect(7, 5, 2, 1);
-  ctx.fillRect(6, 8, 3, 1);
-  ctx.fillRect(5, 11, 4, 1);
+  ctx.fillRect(21, 15, 6, 3);
+  ctx.fillRect(18, 24, 9, 3);
+  ctx.fillRect(15, 33, 12, 3);
 
   // Dark brown outline/shadow
   ctx.fillStyle = '#4E342E';
   // Bottom outline
-  ctx.fillRect(4, 14, 8, 1);
-  ctx.fillRect(3, 13, 1, 1);
-  ctx.fillRect(12, 13, 1, 1);
+  ctx.fillRect(12, 42, 24, 3);
+  ctx.fillRect(9, 39, 3, 3);
+  ctx.fillRect(36, 39, 3, 3);
   // Separation lines between coils
-  ctx.fillRect(5, 10, 6, 1);
-  ctx.fillRect(6, 7, 4, 1);
+  ctx.fillRect(15, 30, 18, 3);
+  ctx.fillRect(18, 21, 12, 3);
 
   return canvas;
 }
 
 function generateHeart() {
-  const canvas = createCanvas(16, 16);
+  const canvas = createCanvas(48, 48);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
@@ -1288,77 +1288,77 @@ function generateHeart() {
   ctx.fillStyle = '#E91E63';
 
   // Top left lobe
-  ctx.fillRect(4, 5, 4, 4);
-  ctx.fillRect(5, 4, 2, 1);
+  ctx.fillRect(12, 15, 12, 12);
+  ctx.fillRect(15, 12, 6, 3);
 
   // Top right lobe
-  ctx.fillRect(8, 5, 4, 4);
-  ctx.fillRect(9, 4, 2, 1);
+  ctx.fillRect(24, 15, 12, 12);
+  ctx.fillRect(27, 12, 6, 3);
 
   // Middle connecting section
-  ctx.fillRect(6, 9, 4, 2);
+  ctx.fillRect(18, 27, 12, 6);
 
   // Bottom triangle point
-  ctx.fillRect(7, 11, 2, 1);
-  ctx.fillRect(7, 12, 2, 1);
-  ctx.fillRect(8, 13, 1, 1);
+  ctx.fillRect(21, 33, 6, 3);
+  ctx.fillRect(21, 36, 6, 3);
+  ctx.fillRect(24, 39, 3, 3);
 
   // Pink highlight (top-left lobe)
   ctx.fillStyle = '#F8BBD0';
-  ctx.fillRect(5, 5, 2, 2);
-  ctx.fillRect(6, 4, 1, 1);
+  ctx.fillRect(15, 15, 6, 6);
+  ctx.fillRect(18, 12, 3, 3);
 
   // Dark pink shadow (bottom-right)
   ctx.fillStyle = '#AD1457';
-  ctx.fillRect(10, 7, 2, 2);
-  ctx.fillRect(8, 10, 2, 1);
+  ctx.fillRect(30, 21, 6, 6);
+  ctx.fillRect(24, 30, 6, 3);
 
   // Black outline
   ctx.fillStyle = '#000000';
   // Top lobes outline
-  ctx.fillRect(5, 3, 2, 1);
-  ctx.fillRect(4, 4, 1, 1);
-  ctx.fillRect(3, 5, 1, 4);
-  ctx.fillRect(9, 3, 2, 1);
-  ctx.fillRect(11, 4, 1, 1);
-  ctx.fillRect(12, 5, 1, 4);
+  ctx.fillRect(15, 9, 6, 3);
+  ctx.fillRect(12, 12, 3, 3);
+  ctx.fillRect(9, 15, 3, 12);
+  ctx.fillRect(27, 9, 6, 3);
+  ctx.fillRect(33, 12, 3, 3);
+  ctx.fillRect(36, 15, 3, 12);
   // Bottom point outline
-  ctx.fillRect(6, 11, 1, 1);
-  ctx.fillRect(7, 13, 1, 1);
-  ctx.fillRect(9, 11, 1, 1);
+  ctx.fillRect(18, 33, 3, 3);
+  ctx.fillRect(21, 39, 3, 3);
+  ctx.fillRect(27, 33, 3, 3);
 
   return canvas;
 }
 
 function generatePill() {
-  const canvas = createCanvas(16, 16);
+  const canvas = createCanvas(48, 48);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
   // Capsule pill shape (10x6 vertical capsule)
   // White bottom half
   ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(6, 10, 4, 4);
-  ctx.fillRect(5, 11, 6, 2);
+  ctx.fillRect(18, 30, 12, 12);
+  ctx.fillRect(15, 33, 18, 6);
 
   // Red top half
   ctx.fillStyle = '#F44336';
-  ctx.fillRect(6, 6, 4, 4);
-  ctx.fillRect(5, 7, 6, 2);
+  ctx.fillRect(18, 18, 12, 12);
+  ctx.fillRect(15, 21, 18, 6);
 
   // Round ends for capsule shape
   ctx.fillStyle = '#F44336';
-  ctx.fillRect(7, 5, 2, 1);
+  ctx.fillRect(21, 15, 6, 3);
   ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(7, 14, 2, 1);
+  ctx.fillRect(21, 42, 6, 3);
 
   // Pink highlight on red part
   ctx.fillStyle = '#FFCDD2';
-  ctx.fillRect(7, 7, 2, 1);
+  ctx.fillRect(21, 21, 6, 3);
 
   // Light gray highlight on white part
   ctx.fillStyle = '#F5F5F5';
-  ctx.fillRect(7, 11, 2, 1);
+  ctx.fillRect(21, 33, 6, 3);
 
   // Black outline
   ctx.strokeStyle = '#000000';
@@ -1366,19 +1366,19 @@ function generatePill() {
 
   // Outline the capsule shape
   ctx.beginPath();
-  ctx.rect(5, 7, 6, 6);
+  ctx.rect(15, 21, 18, 18);
   ctx.stroke();
 
   // Top and bottom caps
   ctx.fillStyle = '#000000';
   // Top outline pixels
-  ctx.fillRect(7, 5, 2, 1);
-  ctx.fillRect(6, 6, 1, 1);
-  ctx.fillRect(9, 6, 1, 1);
+  ctx.fillRect(21, 15, 6, 3);
+  ctx.fillRect(18, 18, 3, 3);
+  ctx.fillRect(27, 18, 3, 3);
   // Bottom outline pixels
-  ctx.fillRect(7, 14, 2, 1);
-  ctx.fillRect(6, 13, 1, 1);
-  ctx.fillRect(9, 13, 1, 1);
+  ctx.fillRect(21, 42, 6, 3);
+  ctx.fillRect(18, 39, 3, 3);
+  ctx.fillRect(27, 39, 3, 3);
 
   return canvas;
 }

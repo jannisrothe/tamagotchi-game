@@ -304,7 +304,7 @@ function drawTamagotchi() {
             ctx.save();
             ctx.scale(heartScale, heartScale);
             ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(sprites.items.heart, -8, -8, 16, 16);
+            ctx.drawImage(sprites.items.heart, -24, -24, 48, 48);
             ctx.restore();
         }
 
@@ -316,7 +316,7 @@ function drawPoop(poop) {
     if (sprites.items.poop) {
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(sprites.items.poop, poop.x - 8, poop.y - 8, 16, 16);
+        ctx.drawImage(sprites.items.poop, poop.x - 24, poop.y - 24, 48, 48);
         ctx.restore();
     }
 }
@@ -504,7 +504,7 @@ function feedTamagotchi() {
             if (sprites.items.burger) {
                 ctx.save();
                 ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(sprites.items.burger, this.x - 8, this.y - 8, 16, 16);
+                ctx.drawImage(sprites.items.burger, this.x - 24, this.y - 24, 48, 48);
                 ctx.restore();
             }
         },
@@ -606,7 +606,7 @@ function playWithTamagotchi() {
             if (sprites.items.ball) {
                 ctx.save();
                 ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(sprites.items.ball, this.x - 8, this.y - 8, 16, 16);
+                ctx.drawImage(sprites.items.ball, this.x - 24, this.y - 24, 48, 48);
                 ctx.restore();
             }
         },
@@ -725,7 +725,7 @@ function healTamagotchi() {
                     ctx.save();
                     ctx.globalAlpha = this.opacity;
                     ctx.imageSmoothingEnabled = false;
-                    ctx.drawImage(sprites.items.pill, this.x - 8, this.y + this.floatY - 8, 16, 16);
+                    ctx.drawImage(sprites.items.pill, this.x - 24, this.y + this.floatY - 24, 48, 48);
                     ctx.restore();
                 }
             },
