@@ -25,17 +25,29 @@ const sounds = {
 
 function playSound(soundArray) {
     try {
-        if (typeof jsfxr !== 'undefined') {
+        if (audioLibrariesReady && typeof jsfxr !== 'undefined' && audioSettings.soundEnabled) {
             const audio = jsfxr(soundArray);
+            audio.volume = audioSettings.soundVolume;
             audio.play().catch(err => console.log('Audio play blocked:', err));
-            console.log('Sound played');
-        } else {
-            console.error('jsfxr library not loaded!');
         }
     } catch(e) {
         console.error('Sound play failed:', e);
     }
 }
+
+// Check if audio libraries are ready
+let audioLibrariesReady = false;
+
+window.addEventListener('load', () => {
+    audioLibrariesReady = (typeof jsfxr !== 'undefined' && typeof TinyMusic !== 'undefined');
+    console.log('Audio libraries ready:', audioLibrariesReady);
+    console.log('jsfxr:', typeof jsfxr !== 'undefined');
+    console.log('TinyMusic:', typeof TinyMusic !== 'undefined');
+
+    if (!audioLibrariesReady) {
+        console.error('Audio libraries failed to load!');
+    }
+});
 
 // ==========================================
 // BACKGROUND MUSIC (TinyMusic)
@@ -45,7 +57,7 @@ let musicStarted = false;
 
 function initMusic() {
     try {
-        if (typeof TinyMusic !== 'undefined' && !musicStarted) {
+        if (audioLibrariesReady && typeof TinyMusic !== 'undefined' && !musicStarted && audioSettings.musicEnabled) {
             console.log('Initializing background music...');
             const tempo = 120;
             const sequence = new TinyMusic.Sequence(null, tempo, [
@@ -57,12 +69,11 @@ function initMusic() {
 
             bgMusic = new TinyMusic.Player();
             bgMusic.loop = true;
+            bgMusic.volume = audioSettings.musicVolume;
             bgMusic.add(sequence);
             bgMusic.play();
             musicStarted = true;
             console.log('Background music started!');
-        } else if (typeof TinyMusic === 'undefined') {
-            console.error('TinyMusic library not loaded!');
         }
     } catch(e) {
         console.error('Music init failed:', e);
