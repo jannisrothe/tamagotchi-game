@@ -97,11 +97,13 @@ const sprites = {
 let spritesLoaded = false;
 
 function loadSprites() {
+    // Base path for assets (works in dev and production)
+    const basePath = import.meta.env.BASE_URL || './';
     const spriteLoadPromises = [];
 
     // Load egg
     const eggImg = new Image();
-    eggImg.src = './assets/sprites/tamagotchi/egg/egg-idle.png';
+    eggImg.src = `${basePath}assets/sprites/tamagotchi/egg/egg-idle.png`;
     spriteLoadPromises.push(new Promise(resolve => {
         eggImg.onload = () => {
             sprites.egg = eggImg;
@@ -114,7 +116,7 @@ function loadSprites() {
                         'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     babyFrames.forEach(frame => {
         const img = new Image();
-        img.src = `./assets/sprites/tamagotchi/baby/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/baby/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.baby[frame] = img;
@@ -128,7 +130,7 @@ function loadSprites() {
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     childFrames.forEach(frame => {
         const img = new Image();
-        img.src = `./assets/sprites/tamagotchi/child/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/child/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.child[frame] = img;
@@ -142,7 +144,7 @@ function loadSprites() {
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     adultFrames.forEach(frame => {
         const img = new Image();
-        img.src = `./assets/sprites/tamagotchi/adult/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/adult/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.adult[frame] = img;
@@ -155,7 +157,7 @@ function loadSprites() {
     const itemNames = ['burger', 'ball', 'poop', 'pill', 'heart'];
     itemNames.forEach(itemName => {
         const img = new Image();
-        img.src = `./assets/sprites/items/${itemName}.png`;
+        img.src = `${basePath}assets/sprites/items/${itemName}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.items[itemName] = img;
