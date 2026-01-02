@@ -1160,50 +1160,76 @@ function generateBurger() {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  // Bottom bun
+  // Bottom bun (with texture)
   ctx.fillStyle = '#8D6E63';
   ctx.fillRect(8, 24, 16, 4);
   ctx.fillRect(6, 26, 20, 2);
 
-  // Patty (brown meat)
+  // Add bun texture (dithered pattern)
+  ctx.fillStyle = '#A1887F'; // Lighter brown for highlights
+  ctx.fillRect(8, 24, 1, 1);
+  ctx.fillRect(12, 25, 1, 1);
+  ctx.fillRect(18, 24, 1, 1);
+  ctx.fillRect(22, 26, 1, 1);
+
+  // Patty with grill marks
   ctx.fillStyle = '#6D4C41';
   ctx.fillRect(8, 20, 16, 4);
   ctx.fillRect(6, 22, 20, 2);
 
-  // Cheese (yellow, slightly melted)
+  // Grill marks (darker brown)
+  ctx.fillStyle = '#4E342E';
+  ctx.fillRect(10, 20, 12, 1);
+  ctx.fillRect(10, 22, 12, 1);
+
+  // Cheese with better melting effect
   ctx.fillStyle = '#FFC107';
   ctx.fillRect(8, 18, 16, 2);
   ctx.fillRect(6, 18, 2, 2);
   ctx.fillRect(22, 18, 2, 2);
 
-  // Lettuce (green, wavy)
+  // Cheese highlights
+  ctx.fillStyle = '#FFD54F';
+  ctx.fillRect(10, 18, 8, 1);
+
+  // Lettuce with more texture
   ctx.fillStyle = '#4CAF50';
   ctx.fillRect(8, 16, 16, 2);
   ctx.fillRect(6, 16, 2, 2);
   ctx.fillRect(12, 14, 4, 2);
   ctx.fillRect(18, 14, 4, 2);
 
-  // Top bun (brown)
+  // Lettuce detail
+  ctx.fillStyle = '#66BB6A'; // Lighter green
+  ctx.fillRect(9, 16, 1, 1);
+  ctx.fillRect(14, 15, 1, 1);
+  ctx.fillRect(19, 16, 1, 1);
+
+  // Top bun with texture
   ctx.fillStyle = '#D4A574';
   ctx.fillRect(10, 10, 12, 4);
   ctx.fillRect(8, 12, 16, 2);
   ctx.fillRect(12, 8, 8, 2);
 
-  // Sesame seeds (beige/white)
+  // Bun highlights
+  ctx.fillStyle = '#E0C9A6';
+  ctx.fillRect(12, 10, 6, 2);
+
+  // More sesame seeds (6 total)
   ctx.fillStyle = '#F5F5DC';
   ctx.fillRect(12, 10, 2, 2);
   ctx.fillRect(18, 10, 2, 2);
   ctx.fillRect(14, 12, 2, 2);
+  ctx.fillRect(10, 11, 1, 1);
+  ctx.fillRect(20, 11, 1, 1);
+  ctx.fillRect(16, 9, 1, 1);
 
   // Black outline
   ctx.fillStyle = '#000000';
-  // Top outline
   ctx.fillRect(12, 6, 8, 2);
   ctx.fillRect(10, 8, 12, 2);
-  // Side outlines
   ctx.fillRect(6, 14, 2, 12);
   ctx.fillRect(24, 14, 2, 12);
-  // Bottom outline
   ctx.fillRect(6, 28, 20, 2);
 
   return canvas;
@@ -1217,23 +1243,43 @@ function generateBall() {
   // White ball body (pixel-perfect circle)
   drawPixelCircle(ctx, 16, 16, 10, '#FFFFFF');
 
-  // Blue stripes/segments (pixel art style)
+  // Blue panels (pentagon pattern instead of simple cross)
   ctx.fillStyle = '#2196F3';
 
-  // Vertical stripe
-  ctx.fillRect(16, 8, 2, 18);
-  ctx.fillRect(14, 10, 2, 14);
-  ctx.fillRect(18, 10, 2, 14);
+  // Center pentagon
+  ctx.fillRect(14, 14, 4, 4);
+  ctx.fillRect(13, 15, 1, 2);
+  ctx.fillRect(18, 15, 1, 2);
 
-  // Horizontal stripe
-  ctx.fillRect(8, 16, 18, 2);
-  ctx.fillRect(10, 14, 14, 2);
-  ctx.fillRect(10, 18, 14, 2);
+  // Side panels
+  ctx.fillRect(9, 14, 3, 4);
+  ctx.fillRect(20, 14, 3, 4);
+  ctx.fillRect(14, 9, 4, 3);
+  ctx.fillRect(14, 20, 4, 3);
 
-  // Light gray shading (bottom-right)
+  // Darker blue for shading (bottom panels)
+  ctx.fillStyle = '#1976D2';
+  ctx.fillRect(14, 21, 4, 2);
+  ctx.fillRect(20, 16, 2, 3);
+
+  // Lighter blue for highlights (top panels)
+  ctx.fillStyle = '#64B5F6';
+  ctx.fillRect(14, 9, 4, 1);
+  ctx.fillRect(9, 14, 1, 2);
+
+  // Enhanced shading (bottom-right shadow)
   ctx.fillStyle = '#E0E0E0';
   ctx.fillRect(22, 20, 4, 4);
   ctx.fillRect(20, 22, 2, 2);
+
+  // Darker shadow
+  ctx.fillStyle = '#BDBDBD';
+  ctx.fillRect(23, 22, 2, 2);
+
+  // Specular highlight (top-left bright spot)
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(11, 11, 2, 2);
+  ctx.fillRect(10, 12, 1, 1);
 
   // Black outline
   strokePixelCircle(ctx, 16, 16, 10, '#000000', 1);
@@ -1284,34 +1330,51 @@ function generateHeart() {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  // Pixel art heart shape
+  // Main heart body (base pink)
   ctx.fillStyle = '#E91E63';
 
-  // Top left lobe
+  // Top left lobe (improved curve)
   ctx.fillRect(8, 10, 8, 8);
   ctx.fillRect(10, 8, 4, 2);
 
-  // Top right lobe
+  // Top right lobe (improved curve)
   ctx.fillRect(16, 10, 8, 8);
   ctx.fillRect(18, 8, 4, 2);
 
   // Middle connecting section
   ctx.fillRect(12, 18, 8, 4);
 
-  // Bottom triangle point
+  // Bottom triangle point (smoother)
   ctx.fillRect(14, 22, 4, 2);
   ctx.fillRect(14, 24, 4, 2);
   ctx.fillRect(16, 26, 2, 2);
 
-  // Pink highlight (top-left lobe)
+  // Primary highlight (top-left, glossy shine)
   ctx.fillStyle = '#F8BBD0';
   ctx.fillRect(10, 10, 4, 4);
   ctx.fillRect(12, 8, 2, 2);
 
-  // Dark pink shadow (bottom-right)
+  // Secondary highlight (brighter shine spot)
+  ctx.fillStyle = '#FCE4EC';
+  ctx.fillRect(11, 11, 2, 2);
+  ctx.fillRect(12, 9, 1, 1);
+
+  // Mid-tone for gradient (dithered shading)
+  ctx.fillStyle = '#EC407A';
+  ctx.fillRect(13, 14, 1, 1);
+  ctx.fillRect(15, 16, 1, 1);
+  ctx.fillRect(17, 14, 1, 1);
+
+  // Dark shadow (bottom-right)
   ctx.fillStyle = '#AD1457';
   ctx.fillRect(20, 14, 4, 4);
   ctx.fillRect(16, 20, 4, 2);
+  ctx.fillRect(17, 23, 2, 2);
+
+  // Deeper shadow
+  ctx.fillStyle = '#880E4F';
+  ctx.fillRect(21, 16, 2, 2);
+  ctx.fillRect(17, 21, 2, 1);
 
   // Black outline
   ctx.fillStyle = '#000000';

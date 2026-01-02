@@ -23,6 +23,14 @@ const sounds = {
     click: [0,,0.01,,0.1,0.15,,,,,,,,,,,,,1,,,,,0.1],
 };
 
+// AUDIO SETTINGS
+let audioSettings = {
+    soundVolume: 0.7,
+    musicVolume: 0.5,
+    soundEnabled: true,
+    musicEnabled: true
+};
+
 function playSound(soundArray) {
     try {
         if (audioLibrariesReady && typeof jsfxr !== 'undefined' && audioSettings.soundEnabled) {
@@ -923,17 +931,6 @@ document.getElementById('pet-name-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') submitName();
 });
 
-// ==========================================
-// AUDIO SETTINGS
-// ==========================================
-
-let audioSettings = {
-    soundVolume: 0.7,
-    musicVolume: 0.5,
-    soundEnabled: true,
-    musicEnabled: true
-};
-
 // Load audio settings from localStorage
 function loadAudioSettings() {
     const saved = localStorage.getItem('audioSettings');
@@ -1033,45 +1030,19 @@ document.getElementById('audio-save-btn')?.addEventListener('click', () => {
     playSound(sounds.click);
 });
 
-// Override playSound to respect volume settings and sync with AudioManager
-const originalPlaySound = playSound;
-playSound = function(soundArray) {
-    if (audioSettings.soundEnabled) {
-        try {
-            // Try to use AudioManager if available (from Phaser/TypeScript side)
-            if (window.game && window.game.audioManager) {
-                // Map sound names to AudioManager sounds
-                const soundMap = {
-                    [sounds.eat]: 'feed',
-                    [sounds.play]: 'play',
-                    [sounds.clean]: 'clean',
-                    [sounds.heal]: 'heal',
-                    [sounds.evolve]: 'evolution',
-                    [sounds.click]: 'button'
-                };
-                
-                const soundName = soundMap[soundArray];
-                if (soundName) {
-                    window.game.audioManager.playSound(soundName);
-                    return;
-                }
-            }
-            
-            // Fallback to jsfxr if AudioManager not available
-            if (typeof jsfxr !== 'undefined') {
-                const audio = jsfxr(soundArray);
-                audio.volume = audioSettings.soundVolume;
-                audio.play().catch(err => console.log('Audio play blocked:', err));
-            }
-        } catch(e) {
-            console.error('Sound play failed:', e);
-        }
-    }
-};
-
 // ==========================================
 // START GAME
 // ==========================================
 
 loadAudioSettings();
+
+// Clear old audio settings if they exist (one-time migration)
+if (!localStorage.getItem('audioSettingsMigrated')) {
+    console.log('Migrating audio settings to new version - enabling audio by default');
+    audioSettings.soundEnabled = true;
+    audioSettings.musicEnabled = true;
+    saveAudioSettings();
+    localStorage.setItem('audioSettingsMigrated', 'true');
+}
+
 loadGame();
