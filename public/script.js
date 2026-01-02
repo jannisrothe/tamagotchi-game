@@ -306,7 +306,7 @@ function drawTamagotchi() {
             ctx.save();
             ctx.scale(heartScale, heartScale);
             ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(sprites.items.heart, -24, -24, 48, 48);
+            ctx.drawImage(sprites.items.heart, -16, -16, 32, 32);
             ctx.restore();
         }
 
@@ -318,7 +318,7 @@ function drawPoop(poop) {
     if (sprites.items.poop) {
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(sprites.items.poop, poop.x - 24, poop.y - 24, 48, 48);
+        ctx.drawImage(sprites.items.poop, poop.x - 16, poop.y - 16, 32, 32);
         ctx.restore();
     }
 }
@@ -506,7 +506,7 @@ function feedTamagotchi() {
             if (sprites.items.burger) {
                 ctx.save();
                 ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(sprites.items.burger, this.x - 24, this.y - 24, 48, 48);
+                ctx.drawImage(sprites.items.burger, this.x - 16, this.y - 16, 32, 32);
                 ctx.restore();
             }
         },
@@ -608,7 +608,7 @@ function playWithTamagotchi() {
             if (sprites.items.ball) {
                 ctx.save();
                 ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(sprites.items.ball, this.x - 24, this.y - 24, 48, 48);
+                ctx.drawImage(sprites.items.ball, this.x - 16, this.y - 16, 32, 32);
                 ctx.restore();
             }
         },
@@ -727,7 +727,7 @@ function healTamagotchi() {
                     ctx.save();
                     ctx.globalAlpha = this.opacity;
                     ctx.imageSmoothingEnabled = false;
-                    ctx.drawImage(sprites.items.pill, this.x - 24, this.y + this.floatY - 24, 48, 48);
+                    ctx.drawImage(sprites.items.pill, this.x - 16, this.y + this.floatY - 16, 32, 32);
                     ctx.restore();
                 }
             },
@@ -913,7 +913,154 @@ document.getElementById('pet-name-input').addEventListener('keypress', (e) => {
 });
 
 // ==========================================
+// AUDIO SETTINGS
+// ==========================================
+
+let audioSettings = {
+    soundVolume: 0.7,
+    musicVolume: 0.5,
+    soundEnabled: true,
+    musicEnabled: true
+};
+
+// Load audio settings from localStorage
+function loadAudioSettings() {
+    const saved = localStorage.getItem('audioSettings');
+    if (saved) {
+        audioSettings = { ...audioSettings, ...JSON.parse(saved) };
+    }
+    updateAudioUI();
+}
+
+// Save audio settings to localStorage
+function saveAudioSettings() {
+    localStorage.setItem('audioSettings', JSON.stringify(audioSettings));
+}
+
+// Update audio UI controls
+function updateAudioUI() {
+    document.getElementById('sound-volume').value = audioSettings.soundVolume * 100;
+    document.getElementById('sound-value').textContent = Math.round(audioSettings.soundVolume * 100) + '%';
+    document.getElementById('music-volume').value = audioSettings.musicVolume * 100;
+    document.getElementById('music-value').textContent = Math.round(audioSettings.musicVolume * 100) + '%';
+    
+    document.getElementById('sound-toggle').textContent = audioSettings.soundEnabled ? 'ON' : 'OFF';
+    document.getElementById('sound-toggle').classList.toggle('bg-[#4ECDC4]', audioSettings.soundEnabled);
+    document.getElementById('sound-toggle').classList.toggle('text-white', audioSettings.soundEnabled);
+    document.getElementById('sound-toggle').classList.toggle('bg-gray-200', !audioSettings.soundEnabled);
+    document.getElementById('sound-toggle').classList.toggle('text-black', !audioSettings.soundEnabled);
+    
+    document.getElementById('music-toggle').textContent = audioSettings.musicEnabled ? 'ON' : 'OFF';
+    document.getElementById('music-toggle').classList.toggle('bg-[#4ECDC4]', audioSettings.musicEnabled);
+    document.getElementById('music-toggle').classList.toggle('text-white', audioSettings.musicEnabled);
+    document.getElementById('music-toggle').classList.toggle('bg-gray-200', !audioSettings.musicEnabled);
+    document.getElementById('music-toggle').classList.toggle('text-black', !audioSettings.musicEnabled);
+}
+
+// Audio settings event listeners
+document.getElementById('audio-settings-btn')?.addEventListener('click', () => {
+    loadAudioSettings();
+    document.getElementById('audio-settings-modal').classList.remove('hidden');
+    document.getElementById('audio-settings-modal').classList.add('flex');
+    playSound(sounds.click);
+});
+
+document.getElementById('audio-close-btn')?.addEventListener('click', () => {
+    document.getElementById('audio-settings-modal').classList.add('hidden');
+    document.getElementById('audio-settings-modal').classList.remove('flex');
+    playSound(sounds.click);
+});
+
+document.getElementById('sound-toggle')?.addEventListener('click', () => {
+    audioSettings.soundEnabled = !audioSettings.soundEnabled;
+    updateAudioUI();
+    if (audioSettings.soundEnabled) {
+        playSound(sounds.click);
+    }
+});
+
+document.getElementById('music-toggle')?.addEventListener('click', () => {
+    audioSettings.musicEnabled = !audioSettings.musicEnabled;
+    updateAudioUI();
+    if (audioSettings.musicEnabled) {
+        playSound(sounds.click);
+        if (bgMusic && musicStarted) {
+            bgMusic.play();
+        }
+    } else {
+        if (bgMusic) {
+            bgMusic.pause();
+        }
+    }
+});
+
+document.getElementById('sound-volume')?.addEventListener('input', (e) => {
+    audioSettings.soundVolume = e.target.value / 100;
+    document.getElementById('sound-value').textContent = e.target.value + '%';
+});
+
+document.getElementById('music-volume')?.addEventListener('input', (e) => {
+    audioSettings.musicVolume = e.target.value / 100;
+    document.getElementById('music-value').textContent = e.target.value + '%';
+    if (bgMusic) {
+        bgMusic.volume = audioSettings.musicVolume;
+    }
+});
+
+document.getElementById('audio-save-btn')?.addEventListener('click', () => {
+    saveAudioSettings();
+    
+    // Sync with AudioManager if available
+    if (window.game && window.game.audioManager) {
+        const audioManager = window.game.audioManager;
+        audioManager.updateSoundVolume(audioSettings.soundEnabled ? audioSettings.soundVolume : 0);
+        audioManager.updateMusicVolume(audioSettings.musicEnabled ? audioSettings.musicVolume : 0);
+    }
+    
+    document.getElementById('audio-settings-modal').classList.add('hidden');
+    document.getElementById('audio-settings-modal').classList.remove('flex');
+    playSound(sounds.click);
+});
+
+// Override playSound to respect volume settings and sync with AudioManager
+const originalPlaySound = playSound;
+playSound = function(soundArray) {
+    if (audioSettings.soundEnabled) {
+        try {
+            // Try to use AudioManager if available (from Phaser/TypeScript side)
+            if (window.game && window.game.audioManager) {
+                // Map sound names to AudioManager sounds
+                const soundMap = {
+                    [sounds.eat]: 'feed',
+                    [sounds.play]: 'play',
+                    [sounds.clean]: 'clean',
+                    [sounds.heal]: 'heal',
+                    [sounds.evolve]: 'evolution',
+                    [sounds.click]: 'button'
+                };
+                
+                const soundName = soundMap[soundArray];
+                if (soundName) {
+                    window.game.audioManager.playSound(soundName);
+                    return;
+                }
+            }
+            
+            // Fallback to jsfxr if AudioManager not available
+            if (typeof jsfxr !== 'undefined') {
+                const audio = jsfxr(soundArray);
+                audio.volume = audioSettings.soundVolume;
+                audio.play().catch(err => console.log('Audio play blocked:', err));
+            }
+        } catch(e) {
+            console.error('Sound play failed:', e);
+        }
+    }
+};
+
+// ==========================================
 // START GAME
 // ==========================================
 
+loadAudioSettings();
 loadGame();

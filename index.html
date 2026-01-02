@@ -110,6 +110,9 @@
                 <button id="new-game-btn" class="bg-gradient-to-br from-[#2d3748] to-[#1a202c] text-white px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded-full toy-shadow hover:scale-105 active:scale-95 transition-all">
                     <span>NEW GAME</span>
                 </button>
+                <button id="audio-settings-btn" class="bg-gradient-to-br from-[#4ECDC4] to-[#6ee7b7] text-black px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded-full toy-shadow hover:scale-105 active:scale-95 transition-all">
+                    <span>🔊</span>
+                </button>
             </div>
 
             <!-- Action Buttons -->
@@ -130,6 +133,54 @@
         </div>
     </div>
 
+    <!-- Audio Settings Modal -->
+    <div id="audio-settings-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 items-center justify-center">
+        <div class="bg-gradient-to-br from-white to-gray-50 p-6 rounded-3xl text-center toy-shadow-lg border-4 border-white/60 max-w-sm mx-4">
+            <h2 class="font-mono text-black mb-4 text-lg font-bold uppercase tracking-tight">AUDIO SETTINGS</h2>
+            
+            <div class="space-y-4 mb-6">
+                <!-- Sound Volume -->
+                <div class="text-left">
+                    <label class="font-mono text-black text-sm font-bold uppercase tracking-wider mb-2 block">
+                        🔊 SOUND EFFECTS
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <button id="sound-toggle" class="bg-gray-200 hover:bg-gray-300 text-black px-3 py-1 rounded-xl font-bold text-xs uppercase tracking-wide transition-all">
+                            OFF
+                        </button>
+                        <input type="range" id="sound-volume" min="0" max="100" value="70" 
+                            class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#4ECDC4]">
+                        <span id="sound-value" class="font-mono text-black text-xs font-bold w-10">70%</span>
+                    </div>
+                </div>
+                
+                <!-- Music Volume -->
+                <div class="text-left">
+                    <label class="font-mono text-black text-sm font-bold uppercase tracking-wider mb-2 block">
+                        🎵 BACKGROUND MUSIC
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <button id="music-toggle" class="bg-gray-200 hover:bg-gray-300 text-black px-3 py-1 rounded-xl font-bold text-xs uppercase tracking-wide transition-all">
+                            OFF
+                        </button>
+                        <input type="range" id="music-volume" min="0" max="100" value="50" 
+                            class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#4ECDC4]">
+                        <span id="music-value" class="font-mono text-black text-xs font-bold w-10">50%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <button id="audio-save-btn" class="font-mono text-xs font-bold px-6 py-3 bg-gradient-to-r from-[#4ECDC4] to-[#6ee7b7] text-black rounded-2xl uppercase tracking-wider hover:scale-105 active:scale-95 transition-all flex-1 toy-shadow">
+                    SAVE
+                </button>
+                <button id="audio-close-btn" class="font-mono text-xs font-bold px-6 py-3 bg-gradient-to-br from-gray-200 to-gray-300 text-black rounded-2xl uppercase tracking-wider hover:scale-105 active:scale-95 transition-all flex-1 toy-shadow">
+                    CANCEL
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Name Modal -->
     <div id="name-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 items-center justify-center">
         <div class="bg-gradient-to-br from-white to-gray-50 p-6 rounded-3xl text-center toy-shadow-lg border-4 border-white/60 max-w-sm mx-4">
@@ -142,6 +193,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="./script.js"></script>
 </body>
 </html>
