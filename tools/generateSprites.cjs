@@ -190,36 +190,99 @@ function generateEgg() {
   ctx.ellipse(16, 16, 10, 13, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Add darker shading on bottom-right
+  // Add mid-tone layer (left side, dithered)
+  ctx.fillStyle = '#A0CDD3';
+  for (let y = 8; y < 24; y++) {
+    for (let x = 7; x < 14; x++) {
+      if ((x + y) % 2 === 0) {
+        const dx = x - 16;
+        const dy = y - 16;
+        if (dx * dx / 100 + dy * dy / 169 <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Add darker shading on bottom-right (multi-layer)
   ctx.fillStyle = COLORS.egg.dark;
   ctx.beginPath();
   ctx.ellipse(20, 20, 6, 8, 0.5, 0, Math.PI);
   ctx.fill();
 
-  // Add light highlight on top-left
+  // Dithered shadow for depth
+  ctx.fillStyle = '#557B82';
+  for (let y = 18; y < 26; y++) {
+    for (let x = 18; x < 24; x++) {
+      if ((x + y) % 3 === 0) {
+        const dx = x - 16;
+        const dy = y - 16;
+        if (dx * dx / 100 + dy * dy / 169 <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Specular highlight (bright spot on top-left)
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(12, 9, 2, 2);
+  ctx.fillRect(13, 8, 1, 1);
+  ctx.fillRect(11, 10, 1, 1);
+
+  // Secondary highlight (subtle)
   ctx.fillStyle = '#C8E6EA';
   ctx.beginPath();
   ctx.arc(13, 11, 4, 0, Math.PI * 2);
   ctx.fill();
 
-  // Black outline (2px thick for retro look)
+  // Black outline (2px thick for definition)
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.ellipse(16, 16, 10, 13, 0, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Add spots
-  drawCircle(ctx, 12, 10, 1.5, COLORS.egg.spot);
-  drawCircle(ctx, 20, 14, 1, COLORS.egg.spot);
-  drawCircle(ctx, 15, 20, 1.2, COLORS.egg.spot);
+  // Enhanced spots with depth
+  // Spot 1 (top-left)
+  ctx.fillStyle = COLORS.egg.spot;
+  ctx.fillRect(11, 10, 2, 2);
+  ctx.fillStyle = '#90A8AC';
+  ctx.fillRect(11, 11, 1, 1);
 
-  // Add subtle crack lines (just a hint)
+  // Spot 2 (right)
+  ctx.fillStyle = COLORS.egg.spot;
+  ctx.fillRect(20, 14, 2, 2);
+  ctx.fillStyle = '#90A8AC';
+  ctx.fillRect(20, 15, 1, 1);
+
+  // Spot 3 (bottom-left)
+  ctx.fillStyle = COLORS.egg.spot;
+  ctx.fillRect(14, 20, 2, 2);
+  ctx.fillStyle = '#90A8AC';
+  ctx.fillRect(14, 21, 1, 1);
+
+  // Spot 4 (small, top-right)
+  ctx.fillStyle = COLORS.egg.spot;
+  ctx.fillRect(19, 11, 1, 1);
+
+  // Spot 5 (small, mid-left)
+  ctx.fillStyle = COLORS.egg.spot;
+  ctx.fillRect(10, 16, 1, 1);
+
+  // Enhanced crack lines (more detailed)
   ctx.strokeStyle = COLORS.egg.dark;
-  ctx.lineWidth = 0.5;
+  ctx.lineWidth = 0.8;
   ctx.beginPath();
-  ctx.moveTo(18, 8);
+  ctx.moveTo(18, 7);
+  ctx.lineTo(19, 9);
   ctx.lineTo(20, 11);
+  ctx.stroke();
+
+  // Additional crack branch
+  ctx.beginPath();
+  ctx.moveTo(19, 9);
+  ctx.lineTo(21, 10);
   ctx.stroke();
 
   return canvas;
@@ -252,18 +315,52 @@ function generateBabyBase(mood = 'neutral', frame = 1) {
   ctx.ellipse(16, bodyY, 12, bodyRadiusY, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Add dithered mid-tone (left side)
+  ctx.fillStyle = '#FFB3BA';
+  for (let y = Math.floor(bodyY - bodyRadiusY); y < Math.floor(bodyY + bodyRadiusY); y++) {
+    for (let x = 6; x < 14; x++) {
+      if ((x + y) % 2 === 0) {
+        const dx = x - 16;
+        const dy = y - bodyY;
+        if (dx * dx / 144 + dy * dy / (bodyRadiusY * bodyRadiusY) <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Specular highlight (bright spot on top)
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(13, bodyY - 6, 2, 2);
+  ctx.fillRect(14, bodyY - 7, 1, 1);
+
   // Light highlight (top-left)
   ctx.fillStyle = COLORS.baby.bodyLight;
   ctx.beginPath();
   ctx.arc(12, bodyY - 4, 5, 0, Math.PI * 2);
   ctx.fill();
 
-  // Dark shadow (bottom-right)
+  // Dark shadow (bottom-right) - enhanced
   ctx.fillStyle = COLORS.baby.bodyDark;
-  drawPixel(ctx, 22, bodyY + 6, COLORS.baby.bodyDark, 2);
-  drawPixel(ctx, 21, bodyY + 8, COLORS.baby.bodyDark, 2);
+  ctx.beginPath();
+  ctx.ellipse(20, bodyY + 6, 4, 5, 0.3, 0, Math.PI);
+  ctx.fill();
 
-  // Black outline (2px thick for retro look)
+  // Dithered deeper shadow
+  ctx.fillStyle = '#C55A5F';
+  for (let y = Math.floor(bodyY + 4); y < Math.floor(bodyY + bodyRadiusY); y++) {
+    for (let x = 18; x < 25; x++) {
+      if ((x + y) % 3 === 0) {
+        const dx = x - 16;
+        const dy = y - bodyY;
+        if (dx * dx / 144 + dy * dy / (bodyRadiusY * bodyRadiusY) <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Black outline (2px thick for definition)
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -492,11 +589,44 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.ellipse(16, bodyY, 7, 7 * scaleY, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Dithered mid-tone
+  ctx.fillStyle = '#A8D5BA';
+  const bodyRadiusY = 7 * scaleY;
+  for (let y = Math.floor(bodyY - bodyRadiusY); y < Math.floor(bodyY + bodyRadiusY); y++) {
+    for (let x = 11; x < 16; x++) {
+      if ((x + y) % 2 === 0) {
+        const dx = x - 16;
+        const dy = y - bodyY;
+        if (dx * dx / 49 + dy * dy / (bodyRadiusY * bodyRadiusY) <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Specular highlight
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(14, bodyY - 4, 2, 1);
+
   // Light highlight on body
   ctx.fillStyle = COLORS.child.bodyLight;
   ctx.beginPath();
   ctx.arc(14, bodyY - 2, 3, 0, Math.PI * 2);
   ctx.fill();
+
+  // Dithered shadow
+  ctx.fillStyle = '#6B9B7C';
+  for (let y = Math.floor(bodyY + 2); y < Math.floor(bodyY + bodyRadiusY); y++) {
+    for (let x = 18; x < 22; x++) {
+      if ((x + y) % 3 === 0) {
+        const dx = x - 16;
+        const dy = y - bodyY;
+        if (dx * dx / 49 + dy * dy / (bodyRadiusY * bodyRadiusY) <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
 
   // Black outline on body
   ctx.strokeStyle = '#000000';
@@ -521,11 +651,44 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.ellipse(16, headY, 8, 8, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Dithered mid-tone on head
+  ctx.fillStyle = '#A8D5BA';
+  for (let y = headY - 8; y < headY + 8; y++) {
+    for (let x = 10; x < 16; x++) {
+      if ((x + y) % 2 === 0) {
+        const dx = x - 16;
+        const dy = y - headY;
+        if (dx * dx / 64 + dy * dy / 64 <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Specular highlight on head
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(13, headY - 5, 2, 2);
+  ctx.fillRect(14, headY - 6, 1, 1);
+
   // Light highlight on head
   ctx.fillStyle = COLORS.child.bodyLight;
   ctx.beginPath();
   ctx.arc(13, headY - 3, 4, 0, Math.PI * 2);
   ctx.fill();
+
+  // Dithered shadow on head
+  ctx.fillStyle = '#6B9B7C';
+  for (let y = headY + 3; y < headY + 8; y++) {
+    for (let x = 18; x < 23; x++) {
+      if ((x + y) % 3 === 0) {
+        const dx = x - 16;
+        const dy = y - headY;
+        if (dx * dx / 64 + dy * dy / 64 <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
 
   // Black outline on head
   ctx.strokeStyle = '#000000';
@@ -821,11 +984,45 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.ellipse(16, bodyY, 8, 8 * scaleY, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Dithered mid-tone
+  ctx.fillStyle = '#B8C5E0';
+  const bodyRadiusY = 8 * scaleY;
+  for (let y = Math.floor(bodyY - bodyRadiusY); y < Math.floor(bodyY + bodyRadiusY); y++) {
+    for (let x = 10; x < 16; x++) {
+      if ((x + y) % 2 === 0) {
+        const dx = x - 16;
+        const dy = y - bodyY;
+        if (dx * dx / 64 + dy * dy / (bodyRadiusY * bodyRadiusY) <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Specular highlight
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(14, bodyY - 5, 2, 2);
+  ctx.fillRect(15, bodyY - 6, 1, 1);
+
   // Light highlight on body
   ctx.fillStyle = COLORS.adult.bodyLight;
   ctx.beginPath();
   ctx.arc(13, bodyY - 3, 4, 0, Math.PI * 2);
   ctx.fill();
+
+  // Dithered shadow
+  ctx.fillStyle = '#7A8BA8';
+  for (let y = Math.floor(bodyY + 3); y < Math.floor(bodyY + bodyRadiusY); y++) {
+    for (let x = 18; x < 23; x++) {
+      if ((x + y) % 3 === 0) {
+        const dx = x - 16;
+        const dy = y - bodyY;
+        if (dx * dx / 64 + dy * dy / (bodyRadiusY * bodyRadiusY) <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
 
   // Black outline on body
   ctx.strokeStyle = '#000000';
@@ -849,11 +1046,44 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.ellipse(16, headY, 7, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Dithered mid-tone on head
+  ctx.fillStyle = '#B8C5E0';
+  for (let y = headY - 7; y < headY + 7; y++) {
+    for (let x = 10; x < 16; x++) {
+      if ((x + y) % 2 === 0) {
+        const dx = x - 16;
+        const dy = y - headY;
+        if (dx * dx / 49 + dy * dy / 49 <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
+  // Specular highlight on head
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(13, headY - 4, 2, 1);
+  ctx.fillRect(14, headY - 5, 1, 1);
+
   // Light highlight on head
   ctx.fillStyle = COLORS.adult.bodyLight;
   ctx.beginPath();
   ctx.arc(13, headY - 3, 3, 0, Math.PI * 2);
   ctx.fill();
+
+  // Dithered shadow on head
+  ctx.fillStyle = '#7A8BA8';
+  for (let y = headY + 2; y < headY + 7; y++) {
+    for (let x = 18; x < 22; x++) {
+      if ((x + y) % 3 === 0) {
+        const dx = x - 16;
+        const dy = y - headY;
+        if (dx * dx / 49 + dy * dy / 49 <= 1) {
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
 
   // Black outline on head
   ctx.strokeStyle = '#000000';

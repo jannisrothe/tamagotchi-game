@@ -31,6 +31,15 @@ let audioSettings = {
     musicEnabled: true
 };
 
+// SLEEP SCHEDULE (10 PM - 8 AM local time)
+let isSleeping = false;
+
+function isSleepTime() {
+    const now = new Date(); // Gets device/system time
+    const hour = now.getHours(); // Device local hour (0-23)
+    return hour >= 22 || hour < 8; // 10 PM to 8 AM local time
+}
+
 function playSound(soundArray) {
     try {
         if (audioLibrariesReady && typeof jsfxr !== 'undefined' && audioSettings.soundEnabled) {
@@ -333,6 +342,79 @@ function drawTamagotchi() {
     }
 }
 
+function drawSleepingTamagotchi() {
+    // Clear and draw background
+    ctx.fillStyle = '#c8e6c9';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw sleeping Tamagotchi (use neutral sprite or egg if no other stage)
+    if (!spritesLoaded) return;
+
+    const sleepSprite = gameState.stage === 'egg' ? sprites.egg :
+                        sprites[gameState.stage] && sprites[gameState.stage]['neutral'] ?
+                        sprites[gameState.stage]['neutral'] : null;
+
+    if (sleepSprite) {
+        const x = canvas.width / 2;
+        const y = canvas.height / 2;
+        const scale = 2.5;
+        const w = sleepSprite.width * scale;
+        const h = sleepSprite.height * scale;
+
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(sleepSprite, x - w/2, y - h/2, w, h);
+        ctx.restore();
+    }
+
+    // Draw speech bubble with Z's
+    const bubbleX = canvas.width / 2 + 40;
+    const bubbleY = canvas.height / 2 - 50;
+
+    // Bubble background (white with black outline)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(bubbleX, bubbleY, 25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Bubble tail
+    ctx.fillStyle = '#FFFFFF';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bubbleX - 15, bubbleY + 15);
+    ctx.lineTo(bubbleX - 25, bubbleY + 25);
+    ctx.lineTo(bubbleX - 12, bubbleY + 18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Draw animated Z's
+    const time = Date.now() / 1000;
+    const z1Offset = Math.sin(time * 2) * 2;
+    const z2Offset = Math.sin(time * 2 + 0.5) * 2;
+    const z3Offset = Math.sin(time * 2 + 1) * 2;
+
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('Z', bubbleX - 10, bubbleY - 5 + z1Offset);
+    ctx.font = 'bold 13px monospace';
+    ctx.fillText('Z', bubbleX - 3, bubbleY - 13 + z2Offset);
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText('Z', bubbleX + 4, bubbleY - 20 + z3Offset);
+
+    // Draw sleep message
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Sleeping...', canvas.width / 2, canvas.height - 30);
+    ctx.fillText('(10 PM - 8 AM)', canvas.width / 2, canvas.height - 15);
+    ctx.textAlign = 'left';
+}
+
 function drawPoop(poop) {
     if (sprites.items.poop) {
         ctx.save();
@@ -367,6 +449,27 @@ function animate(currentTime) {
     const deltaTime = currentTime - lastTime;
     lastTime = currentTime;
 
+    // Check sleep status (10 PM - 8 AM local time)
+    const shouldSleep = isSleepTime();
+    if (shouldSleep && !isSleeping) {
+        isSleeping = true;
+        console.log('Tamagotchi is going to sleep (10 PM - 8 AM)');
+        // Pause music
+        if (bgMusic && bgMusic.pause) bgMusic.pause();
+    } else if (!shouldSleep && isSleeping) {
+        isSleeping = false;
+        console.log('Tamagotchi is waking up!');
+        // Resume music
+        if (bgMusic && audioSettings.musicEnabled && bgMusic.play) bgMusic.play();
+    }
+
+    // Skip game updates during sleep
+    if (isSleeping) {
+        requestAnimationFrame(animate);
+        drawSleepingTamagotchi();
+        return;
+    }
+
     // Clear canvas
     ctx.fillStyle = '#c8e6c9';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -377,10 +480,6 @@ function animate(currentTime) {
 
     activeObjects.forEach(obj => {
         if (obj.update) obj.update();
-    });
-
-    sortedObjects.forEach(obj => {
-        if (obj.draw) obj.draw();
     });
 
     // Update Tamagotchi movement (allow movement during interactions)
@@ -397,11 +496,16 @@ function animate(currentTime) {
         }
     }
 
-    // Draw poops
+    // Draw poops (background layer)
     gameState.poops.forEach(poop => drawPoop(poop));
 
-    // Draw Tamagotchi
+    // Draw Tamagotchi (mid layer)
     drawTamagotchi();
+
+    // Draw objects (foreground layer - ball appears in front)
+    sortedObjects.forEach(obj => {
+        if (obj.draw) obj.draw();
+    });
 
     // Update heart timer
     if (tama.heartTimer > 0) {
@@ -666,7 +770,7 @@ function playWithTamagotchi() {
                 // Bounce when hitting ground
                 if (this.y >= this.targetY && this.bounceVelocity > 0) {
                     this.y = this.targetY;
-                    this.bounceVelocity = -4 + (this.bounceCount * 0.3); // Gradually smaller bounces
+                    this.bounceVelocity = -4 * Math.pow(0.75, this.bounceCount); // Varying heights: 100%, 75%, 56%, 42%, 32%
                     this.bounceCount++;
 
                     // Add happiness every 2 bounces
@@ -677,8 +781,8 @@ function playWithTamagotchi() {
                         updateUI();
                     }
 
-                    // Stop after 7 bounces
-                    if (this.bounceCount >= 7) {
+                    // Stop after exactly 5 bounces
+                    if (this.bounceCount >= 5) {
                         activeObjects = activeObjects.filter(obj => obj !== ball);
                         tama.showHeart = true;
                         tama.heartTimer = 120;
