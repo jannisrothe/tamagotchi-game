@@ -223,6 +223,7 @@ const gameState = {
     pausedTime: 0,
     petName: 'TAMA',
     poops: [],
+    starvationTimer: 0, // Tracks time spent at 0 hunger
 };
 
 // Tamagotchi sprite
@@ -557,7 +558,7 @@ setInterval(() => {
 setInterval(() => {
     if (gameState.isPaused || !gameState.isAlive || gameState.isSleeping) return;
 
-    gameState.hunger = Math.max(0, gameState.hunger - 0.2);
+    gameState.hunger = Math.max(0, gameState.hunger - 0.014); // 120 min to empty
     gameState.happiness = Math.max(0, gameState.happiness - 0.1);
 
     if (gameState.poops.length > 0) {
@@ -572,7 +573,15 @@ setInterval(() => {
         gameState.isSick = true;
     }
 
-    if ((gameState.hunger === 0 || gameState.health === 0) &&
+    // Track starvation time
+    if (gameState.hunger === 0) {
+        gameState.starvationTimer++;
+    } else {
+        gameState.starvationTimer = 0; // Reset if fed
+    }
+
+    // Die if starved for 1440 minutes (86400 seconds) OR health hits 0
+    if ((gameState.starvationTimer >= 86400 || gameState.health === 0) &&
         gameState.stage !== 'egg' && gameState.stage !== 'baby') {
         gameState.isAlive = false;
     }
@@ -588,11 +597,11 @@ setInterval(() => {
     const ageInSeconds = Math.floor((Date.now() - gameState.birthTime - gameState.pausedTime) / 1000);
     gameState.age = ageInSeconds;
 
-    if (gameState.stage === 'egg' && ageInSeconds >= 10) {
+    if (gameState.stage === 'egg' && ageInSeconds >= 300) { // 5 minutes
         evolve('baby');
-    } else if (gameState.stage === 'baby' && ageInSeconds >= 30) {
+    } else if (gameState.stage === 'baby' && ageInSeconds >= 3600) { // 60 minutes
         evolve('child');
-    } else if (gameState.stage === 'child' && ageInSeconds >= 60) {
+    } else if (gameState.stage === 'child' && ageInSeconds >= 86400) { // 1440 minutes (1 day)
         evolve('adult');
     }
 
@@ -781,8 +790,8 @@ function playWithTamagotchi() {
                         updateUI();
                     }
 
-                    // Stop after exactly 5 bounces
-                    if (this.bounceCount >= 5) {
+                    // Stop after exactly 7 bounces
+                    if (this.bounceCount >= 7) {
                         activeObjects = activeObjects.filter(obj => obj !== ball);
                         tama.showHeart = true;
                         tama.heartTimer = 120;
@@ -923,6 +932,7 @@ function saveGame() {
         pausedTime: gameState.pausedTime,
         isPaused: gameState.isPaused,
         petName: gameState.petName,
+        starvationTimer: gameState.starvationTimer || 0,
         lastSave: Date.now()
     };
     localStorage.setItem('tamagotchi', JSON.stringify(data));
@@ -935,13 +945,20 @@ function loadGame() {
 
         if (!data.isPaused) {
             const timePassed = Math.floor((Date.now() - data.lastSave) / 1000);
-            gameState.hunger = Math.max(0, data.hunger - timePassed * 0.2);
+            gameState.hunger = Math.max(0, data.hunger - timePassed * 0.014); // Match new rate
             gameState.happiness = Math.max(0, data.happiness - (timePassed * 0.1));
             gameState.health = Math.max(0, data.health - (timePassed * 0.1));
+
+            // If hunger was already 0, progress starvation timer
+            gameState.starvationTimer = data.starvationTimer || 0;
+            if (gameState.hunger === 0) {
+                gameState.starvationTimer = Math.min(86400, gameState.starvationTimer + timePassed);
+            }
         } else {
             gameState.hunger = data.hunger;
             gameState.happiness = data.happiness;
             gameState.health = data.health;
+            gameState.starvationTimer = data.starvationTimer || 0;
         }
 
         gameState.age = data.age;
