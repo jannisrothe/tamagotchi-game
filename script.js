@@ -31,13 +31,13 @@ let audioSettings = {
     musicEnabled: true
 };
 
-// SLEEP SCHEDULE (10 PM - 8 AM local time)
+// SLEEP SCHEDULE (8 PM - 8 AM local time)
 let isSleeping = false;
 
 function isSleepTime() {
     const now = new Date(); // Gets device/system time
     const hour = now.getHours(); // Device local hour (0-23)
-    return hour >= 22 || hour < 8; // 10 PM to 8 AM local time
+    return hour >= 20 || hour < 8; // 8 PM to 8 AM local time
 }
 
 function playSound(soundArray) {
@@ -139,12 +139,15 @@ function loadSprites() {
         };
     }));
 
-    // Load baby sprites
+    // Get color variant (defaults to 1 if not set yet)
+    const variant = gameState.colorVariant || 1;
+
+    // Load baby sprites (variant-based)
     const babyFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                         'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     babyFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/baby/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/baby-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.baby[frame] = img;
@@ -153,12 +156,12 @@ function loadSprites() {
         }));
     });
 
-    // Load child sprites
+    // Load child sprites (variant-based)
     const childFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     childFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/child/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/child-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.child[frame] = img;
@@ -167,12 +170,12 @@ function loadSprites() {
         }));
     });
 
-    // Load adult sprites
+    // Load adult sprites (variant-based)
     const adultFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     adultFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/adult/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/adult-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.adult[frame] = img;
@@ -213,6 +216,7 @@ const gameState = {
     health: 100,
     age: 0,
     stage: 'egg',
+    colorVariant: Math.floor(Math.random() * 5) + 1, // Random 1-5
     isDirty: false,
     isSick: false,
     isAlive: true,
@@ -412,7 +416,7 @@ function drawSleepingTamagotchi() {
     ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Sleeping...', canvas.width / 2, canvas.height - 30);
-    ctx.fillText('(10 PM - 8 AM)', canvas.width / 2, canvas.height - 15);
+    ctx.fillText('(8 PM - 8 AM)', canvas.width / 2, canvas.height - 15);
     ctx.textAlign = 'left';
 }
 
@@ -454,7 +458,7 @@ function animate(currentTime) {
     const shouldSleep = isSleepTime();
     if (shouldSleep && !isSleeping) {
         isSleeping = true;
-        console.log('Tamagotchi is going to sleep (10 PM - 8 AM)');
+        console.log('Tamagotchi is going to sleep (8 PM - 8 AM)');
         // Pause music
         if (bgMusic && bgMusic.pause) bgMusic.pause();
     } else if (!shouldSleep && isSleeping) {
@@ -932,6 +936,7 @@ function saveGame() {
         pausedTime: gameState.pausedTime,
         isPaused: gameState.isPaused,
         petName: gameState.petName,
+        colorVariant: gameState.colorVariant || 1,
         starvationTimer: gameState.starvationTimer || 0,
         lastSave: Date.now()
     };
@@ -969,8 +974,12 @@ function loadGame() {
         gameState.pausedTime = data.pausedTime || 0;
         gameState.isPaused = data.isPaused || false;
         gameState.petName = data.petName || 'TAMA';
+        gameState.colorVariant = data.colorVariant || 1;
 
         document.getElementById('pet-name').textContent = gameState.petName;
+
+        // Reload sprites if color variant changed
+        loadSprites();
 
         if (gameState.isPaused) {
             document.getElementById('pause-icon').textContent = '▶';

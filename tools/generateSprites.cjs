@@ -55,6 +55,125 @@ const COLORS = {
   }
 };
 
+// Color variation palettes (5 variants for baby/child/adult)
+const COLOR_PALETTES = [
+  { // Variant 1: Classic (current colors)
+    baby: {
+      body: '#FFB6B9',
+      bodyLight: '#FFC7D8',
+      bodyDark: '#FF9AA0',
+      antenna: '#FF9AA0'
+    },
+    child: {
+      body: '#92E3A9',
+      bodyLight: '#A8E6CF',
+      bodyDark: '#7AD699',
+      antenna: '#7AD699',
+      limb: '#7AD699'
+    },
+    adult: {
+      body: '#FF9A56',
+      bodyLight: '#FFB366',
+      bodyDark: '#FF8543',
+      antenna: '#FF8543',
+      limb: '#FF8543',
+      wing: '#FFC794'
+    }
+  },
+  { // Variant 2: Blue
+    baby: {
+      body: '#A8D8EA',
+      bodyLight: '#C8E8F5',
+      bodyDark: '#8BC8DC',
+      antenna: '#8BC8DC'
+    },
+    child: {
+      body: '#6BB6D6',
+      bodyLight: '#88C5E0',
+      bodyDark: '#54A7C8',
+      antenna: '#54A7C8',
+      limb: '#54A7C8'
+    },
+    adult: {
+      body: '#4A90E2',
+      bodyLight: '#6BA3E8',
+      bodyDark: '#3D7EC6',
+      antenna: '#3D7EC6',
+      limb: '#3D7EC6',
+      wing: '#7DB3ED'
+    }
+  },
+  { // Variant 3: Purple
+    baby: {
+      body: '#D4A5D4',
+      bodyLight: '#E3BFE3',
+      bodyDark: '#C090C0',
+      antenna: '#C090C0'
+    },
+    child: {
+      body: '#B98FC7',
+      bodyLight: '#C9A4D3',
+      bodyDark: '#A87AB3',
+      antenna: '#A87AB3',
+      limb: '#A87AB3'
+    },
+    adult: {
+      body: '#9370DB',
+      bodyLight: '#A989E3',
+      bodyDark: '#7D5BBD',
+      antenna: '#7D5BBD',
+      limb: '#7D5BBD',
+      wing: '#B399E5'
+    }
+  },
+  { // Variant 4: Yellow
+    baby: {
+      body: '#FFF9A8',
+      bodyLight: '#FFFCC7',
+      bodyDark: '#FFF689',
+      antenna: '#FFF689'
+    },
+    child: {
+      body: '#FFE066',
+      bodyLight: '#FFE88A',
+      bodyDark: '#FFD84D',
+      antenna: '#FFD84D',
+      limb: '#FFD84D'
+    },
+    adult: {
+      body: '#FFB84D',
+      bodyLight: '#FFC870',
+      bodyDark: '#FFA633',
+      antenna: '#FFA633',
+      limb: '#FFA633',
+      wing: '#FFD699'
+    }
+  },
+  { // Variant 5: Red
+    baby: {
+      body: '#FFB6B6',
+      bodyLight: '#FFCBCB',
+      bodyDark: '#FFA0A0',
+      antenna: '#FFA0A0'
+    },
+    child: {
+      body: '#FF8787',
+      bodyLight: '#FFA1A1',
+      bodyDark: '#FF6E6E',
+      antenna: '#FF6E6E',
+      limb: '#FF6E6E'
+    },
+    adult: {
+      body: '#FF6B6B',
+      bodyLight: '#FF8787',
+      bodyDark: '#FF5252',
+      antenna: '#FF5252',
+      limb: '#FF5252',
+      wing: '#FF9999'
+    }
+  }
+];
+
 // Output directories
 const SPRITE_DIR = path.join(__dirname, '../public/assets/sprites');
 const TAMA_DIR = path.join(SPRITE_DIR, 'tamagotchi');
@@ -290,10 +409,13 @@ function generateEgg() {
 
 // ==================== BABY SPRITES ====================
 
-function generateBabyBase(mood = 'neutral', frame = 1) {
+function generateBabyBase(mood = 'neutral', frame = 1, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].baby;
 
   // Calculate squash/stretch for animation frames
   let scaleY = 1;
@@ -310,7 +432,7 @@ function generateBabyBase(mood = 'neutral', frame = 1) {
   const bodyRadiusY = 12 * scaleY;
 
   // Draw blob body - base color
-  ctx.fillStyle = COLORS.baby.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 12, bodyRadiusY, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -335,13 +457,13 @@ function generateBabyBase(mood = 'neutral', frame = 1) {
   ctx.fillRect(14, bodyY - 7, 1, 1);
 
   // Light highlight (top-left)
-  ctx.fillStyle = COLORS.baby.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(12, bodyY - 4, 5, 0, Math.PI * 2);
   ctx.fill();
 
   // Dark shadow (bottom-right) - enhanced
-  ctx.fillStyle = COLORS.baby.bodyDark;
+  ctx.fillStyle = palette.bodyDark;
   ctx.beginPath();
   ctx.ellipse(20, bodyY + 6, 4, 5, 0.3, 0, Math.PI);
   ctx.fill();
@@ -368,8 +490,8 @@ function generateBabyBase(mood = 'neutral', frame = 1) {
   ctx.stroke();
 
   // Draw tiny antenna
-  drawCircle(ctx, 16, 6, 1, COLORS.baby.antenna);
-  ctx.strokeStyle = COLORS.baby.antenna;
+  drawCircle(ctx, 16, 6, 1, palette.antenna);
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(16, 7);
@@ -410,15 +532,18 @@ function generateBabyBase(mood = 'neutral', frame = 1) {
   return canvas;
 }
 
-function generateBabyBlink(frame) {
+function generateBabyBlink(frame, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].baby;
+
   const bodyY = 18;
 
   // Draw blob body - base color
-  ctx.fillStyle = COLORS.baby.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 12, 12, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -485,10 +610,13 @@ function generateBabyBlink(frame) {
   return canvas;
 }
 
-function generateBabyEat(frame) {
+function generateBabyEat(frame, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].baby;
 
   const bodyY = 18;
 
@@ -564,10 +692,13 @@ function generateBabyEat(frame) {
 
 // ==================== CHILD SPRITES ====================
 
-function generateChildBase(mood = 'neutral', frame = 1) {
+function generateChildBase(mood = 'neutral', frame = 1, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].child;
 
   // Calculate squash/stretch for animation
   let scaleY = 1;
@@ -584,7 +715,7 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   const bodyY = 22 + offsetY;
 
   // Draw body - base color
-  ctx.fillStyle = COLORS.child.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 7, 7 * scaleY, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -609,7 +740,7 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.fillRect(14, bodyY - 4, 2, 1);
 
   // Light highlight on body
-  ctx.fillStyle = COLORS.child.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(14, bodyY - 2, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -636,7 +767,7 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.stroke();
 
   // Draw small stubby limbs
-  ctx.fillStyle = COLORS.child.limb;
+  ctx.fillStyle = palette.limb;
   // Left arm
   ctx.fillRect(7, bodyY - 2, 2, 4);
   // Right arm
@@ -646,7 +777,7 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.fillRect(18, bodyY + 6, 2, 3);
 
   // Draw head - base color
-  ctx.fillStyle = COLORS.child.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, headY, 8, 8, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -671,7 +802,7 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.fillRect(14, headY - 6, 1, 1);
 
   // Light highlight on head
-  ctx.fillStyle = COLORS.child.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, headY - 3, 4, 0, Math.PI * 2);
   ctx.fill();
@@ -698,7 +829,7 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.stroke();
 
   // Draw TWO antennae
-  ctx.strokeStyle = COLORS.child.antenna;
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'round';
   // Left antenna
@@ -706,13 +837,13 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   ctx.moveTo(12, headY - 8);
   ctx.lineTo(10, headY - 12);
   ctx.stroke();
-  drawCircle(ctx, 10, headY - 12, 1.5, COLORS.child.antenna);
+  drawCircle(ctx, 10, headY - 12, 1.5, palette.antenna);
   // Right antenna
   ctx.beginPath();
   ctx.moveTo(20, headY - 8);
   ctx.lineTo(22, headY - 12);
   ctx.stroke();
-  drawCircle(ctx, 22, headY - 12, 1.5, COLORS.child.antenna);
+  drawCircle(ctx, 22, headY - 12, 1.5, palette.antenna);
 
   // Draw smaller eyes
   const eyeY = headY;
@@ -740,22 +871,25 @@ function generateChildBase(mood = 'neutral', frame = 1) {
   return canvas;
 }
 
-function generateChildBlink(frame) {
+function generateChildBlink(frame, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].child;
 
   const headY = 12;
   const bodyY = 22;
 
   // Draw body - base color
-  ctx.fillStyle = COLORS.child.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 7, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight on body
-  ctx.fillStyle = COLORS.child.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(14, bodyY - 2, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -768,20 +902,20 @@ function generateChildBlink(frame) {
   ctx.stroke();
 
   // Draw limbs
-  ctx.fillStyle = COLORS.child.limb;
+  ctx.fillStyle = palette.limb;
   ctx.fillRect(7, bodyY - 2, 2, 4);
   ctx.fillRect(23, bodyY - 2, 2, 4);
   ctx.fillRect(12, bodyY + 6, 2, 3);
   ctx.fillRect(18, bodyY + 6, 2, 3);
 
   // Draw head - base color
-  ctx.fillStyle = COLORS.child.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, headY, 8, 8, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight on head
-  ctx.fillStyle = COLORS.child.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, headY - 3, 4, 0, Math.PI * 2);
   ctx.fill();
@@ -794,19 +928,19 @@ function generateChildBlink(frame) {
   ctx.stroke();
 
   // Draw antennae
-  ctx.strokeStyle = COLORS.child.antenna;
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(12, headY - 8);
   ctx.lineTo(10, headY - 12);
   ctx.stroke();
-  drawCircle(ctx, 10, headY - 12, 1.5, COLORS.child.antenna);
+  drawCircle(ctx, 10, headY - 12, 1.5, palette.antenna);
   ctx.beginPath();
   ctx.moveTo(20, headY - 8);
   ctx.lineTo(22, headY - 12);
   ctx.stroke();
-  drawCircle(ctx, 22, headY - 12, 1.5, COLORS.child.antenna);
+  drawCircle(ctx, 22, headY - 12, 1.5, palette.antenna);
 
   // Draw eyes based on blink frame
   const eyeY = headY;
@@ -841,22 +975,25 @@ function generateChildBlink(frame) {
   return canvas;
 }
 
-function generateChildEat(frame) {
+function generateChildEat(frame, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].child;
 
   const headY = 12;
   const bodyY = 22;
 
   // Draw body - base color
-  ctx.fillStyle = COLORS.child.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 7, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight on body
-  ctx.fillStyle = COLORS.child.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(14, bodyY - 2, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -869,20 +1006,20 @@ function generateChildEat(frame) {
   ctx.stroke();
 
   // Draw limbs
-  ctx.fillStyle = COLORS.child.limb;
+  ctx.fillStyle = palette.limb;
   ctx.fillRect(7, bodyY - 2, 2, 4);
   ctx.fillRect(23, bodyY - 2, 2, 4);
   ctx.fillRect(12, bodyY + 6, 2, 3);
   ctx.fillRect(18, bodyY + 6, 2, 3);
 
   // Draw head - base color
-  ctx.fillStyle = COLORS.child.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, headY, 8, 8, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight on head
-  ctx.fillStyle = COLORS.child.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, headY - 3, 4, 0, Math.PI * 2);
   ctx.fill();
@@ -895,19 +1032,19 @@ function generateChildEat(frame) {
   ctx.stroke();
 
   // Draw antennae
-  ctx.strokeStyle = COLORS.child.antenna;
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(12, headY - 8);
   ctx.lineTo(10, headY - 12);
   ctx.stroke();
-  drawCircle(ctx, 10, headY - 12, 1.5, COLORS.child.antenna);
+  drawCircle(ctx, 10, headY - 12, 1.5, palette.antenna);
   ctx.beginPath();
   ctx.moveTo(20, headY - 8);
   ctx.lineTo(22, headY - 12);
   ctx.stroke();
-  drawCircle(ctx, 22, headY - 12, 1.5, COLORS.child.antenna);
+  drawCircle(ctx, 22, headY - 12, 1.5, palette.antenna);
 
   // Draw eyes
   const eyeY = headY;
@@ -944,10 +1081,13 @@ function generateChildEat(frame) {
 
 // ==================== ADULT SPRITES ====================
 
-function generateAdultBase(mood = 'neutral', frame = 1) {
+function generateAdultBase(mood = 'neutral', frame = 1, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].adult;
 
   // Calculate squash/stretch
   let scaleY = 1;
@@ -964,7 +1104,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   const bodyY = 20 + offsetY;
 
   // Draw tail/wing
-  ctx.fillStyle = COLORS.adult.wing;
+  ctx.fillStyle = palette.wing;
   ctx.beginPath();
   ctx.moveTo(6, bodyY);
   ctx.lineTo(2, bodyY - 3);
@@ -979,7 +1119,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.fill();
 
   // Draw body - base color
-  ctx.fillStyle = COLORS.adult.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 8, 8 * scaleY, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -1005,7 +1145,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.fillRect(15, bodyY - 6, 1, 1);
 
   // Light highlight on body
-  ctx.fillStyle = COLORS.adult.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, bodyY - 3, 4, 0, Math.PI * 2);
   ctx.fill();
@@ -1032,7 +1172,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.stroke();
 
   // Draw limbs
-  ctx.fillStyle = COLORS.adult.limb;
+  ctx.fillStyle = palette.limb;
   // Arms
   ctx.fillRect(6, bodyY - 2, 2, 6);
   ctx.fillRect(24, bodyY - 2, 2, 6);
@@ -1041,7 +1181,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.fillRect(19, bodyY + 7, 2, 5);
 
   // Draw head - base color
-  ctx.fillStyle = COLORS.adult.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, headY, 7, 7, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -1066,7 +1206,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.fillRect(14, headY - 5, 1, 1);
 
   // Light highlight on head
-  ctx.fillStyle = COLORS.adult.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, headY - 3, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -1093,7 +1233,7 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.stroke();
 
   // Draw THREE antennae/crown
-  ctx.strokeStyle = COLORS.adult.antenna;
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'round';
   // Left antenna
@@ -1101,19 +1241,19 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   ctx.moveTo(11, headY - 7);
   ctx.lineTo(9, headY - 11);
   ctx.stroke();
-  drawCircle(ctx, 9, headY - 11, 1.5, COLORS.adult.antenna);
+  drawCircle(ctx, 9, headY - 11, 1.5, palette.antenna);
   // Center antenna (tallest)
   ctx.beginPath();
   ctx.moveTo(16, headY - 7);
   ctx.lineTo(16, headY - 13);
   ctx.stroke();
-  drawCircle(ctx, 16, headY - 13, 2, COLORS.adult.antenna);
+  drawCircle(ctx, 16, headY - 13, 2, palette.antenna);
   // Right antenna
   ctx.beginPath();
   ctx.moveTo(21, headY - 7);
   ctx.lineTo(23, headY - 11);
   ctx.stroke();
-  drawCircle(ctx, 23, headY - 11, 1.5, COLORS.adult.antenna);
+  drawCircle(ctx, 23, headY - 11, 1.5, palette.antenna);
 
   // Draw proportional eyes (6x6 pixels - 25% of face)
   const eyeY = headY;
@@ -1141,16 +1281,19 @@ function generateAdultBase(mood = 'neutral', frame = 1) {
   return canvas;
 }
 
-function generateAdultBlink(frame) {
+function generateAdultBlink(frame, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].adult;
 
   const headY = 10;
   const bodyY = 20;
 
   // Draw wings
-  ctx.fillStyle = COLORS.adult.wing;
+  ctx.fillStyle = palette.wing;
   ctx.beginPath();
   ctx.moveTo(6, bodyY);
   ctx.lineTo(2, bodyY - 3);
@@ -1165,13 +1308,13 @@ function generateAdultBlink(frame) {
   ctx.fill();
 
   // Draw body - base color
-  ctx.fillStyle = COLORS.adult.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 8, 8, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight on body
-  ctx.fillStyle = COLORS.adult.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, bodyY - 3, 4, 0, Math.PI * 2);
   ctx.fill();
@@ -1184,20 +1327,20 @@ function generateAdultBlink(frame) {
   ctx.stroke();
 
   // Draw limbs
-  ctx.fillStyle = COLORS.adult.limb;
+  ctx.fillStyle = palette.limb;
   ctx.fillRect(6, bodyY - 2, 2, 6);
   ctx.fillRect(24, bodyY - 2, 2, 6);
   ctx.fillRect(11, bodyY + 7, 2, 5);
   ctx.fillRect(19, bodyY + 7, 2, 5);
 
   // Draw head - base color
-  ctx.fillStyle = COLORS.adult.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, headY, 7, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight on head
-  ctx.fillStyle = COLORS.adult.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, headY - 3, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -1210,24 +1353,24 @@ function generateAdultBlink(frame) {
   ctx.stroke();
 
   // Draw antennae
-  ctx.strokeStyle = COLORS.adult.antenna;
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(11, headY - 7);
   ctx.lineTo(9, headY - 11);
   ctx.stroke();
-  drawCircle(ctx, 9, headY - 11, 1.5, COLORS.adult.antenna);
+  drawCircle(ctx, 9, headY - 11, 1.5, palette.antenna);
   ctx.beginPath();
   ctx.moveTo(16, headY - 7);
   ctx.lineTo(16, headY - 13);
   ctx.stroke();
-  drawCircle(ctx, 16, headY - 13, 2, COLORS.adult.antenna);
+  drawCircle(ctx, 16, headY - 13, 2, palette.antenna);
   ctx.beginPath();
   ctx.moveTo(21, headY - 7);
   ctx.lineTo(23, headY - 11);
   ctx.stroke();
-  drawCircle(ctx, 23, headY - 11, 1.5, COLORS.adult.antenna);
+  drawCircle(ctx, 23, headY - 11, 1.5, palette.antenna);
 
   // Draw eyes based on blink frame
   const eyeY = headY;
@@ -1262,16 +1405,19 @@ function generateAdultBlink(frame) {
   return canvas;
 }
 
-function generateAdultEat(frame) {
+function generateAdultEat(frame, variantIndex = 0) {
   const canvas = createCanvas(32, 32);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+
+  // Get color palette for this variant
+  const palette = COLOR_PALETTES[variantIndex].adult;
 
   const headY = 10;
   const bodyY = 20;
 
   // Draw wings
-  ctx.fillStyle = COLORS.adult.wing;
+  ctx.fillStyle = palette.wing;
   ctx.beginPath();
   ctx.moveTo(6, bodyY);
   ctx.lineTo(2, bodyY - 3);
@@ -1286,13 +1432,13 @@ function generateAdultEat(frame) {
   ctx.fill();
 
   // Draw body - base color
-  ctx.fillStyle = COLORS.adult.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 8, 8, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight on body
-  ctx.fillStyle = COLORS.adult.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, bodyY - 3, 4, 0, Math.PI * 2);
   ctx.fill();
@@ -1305,20 +1451,20 @@ function generateAdultEat(frame) {
   ctx.stroke();
 
   // Draw limbs
-  ctx.fillStyle = COLORS.adult.limb;
+  ctx.fillStyle = palette.limb;
   ctx.fillRect(6, bodyY - 2, 2, 6);
   ctx.fillRect(24, bodyY - 2, 2, 6);
   ctx.fillRect(11, bodyY + 7, 2, 5);
   ctx.fillRect(19, bodyY + 7, 2, 5);
 
   // Draw head - base color
-  ctx.fillStyle = COLORS.adult.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, headY, 7, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight on head
-  ctx.fillStyle = COLORS.adult.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(13, headY - 3, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -1331,24 +1477,24 @@ function generateAdultEat(frame) {
   ctx.stroke();
 
   // Draw antennae
-  ctx.strokeStyle = COLORS.adult.antenna;
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(11, headY - 7);
   ctx.lineTo(9, headY - 11);
   ctx.stroke();
-  drawCircle(ctx, 9, headY - 11, 1.5, COLORS.adult.antenna);
+  drawCircle(ctx, 9, headY - 11, 1.5, palette.antenna);
   ctx.beginPath();
   ctx.moveTo(16, headY - 7);
   ctx.lineTo(16, headY - 13);
   ctx.stroke();
-  drawCircle(ctx, 16, headY - 13, 2, COLORS.adult.antenna);
+  drawCircle(ctx, 16, headY - 13, 2, palette.antenna);
   ctx.beginPath();
   ctx.moveTo(21, headY - 7);
   ctx.lineTo(23, headY - 11);
   ctx.stroke();
-  drawCircle(ctx, 23, headY - 11, 1.5, COLORS.adult.antenna);
+  drawCircle(ctx, 23, headY - 11, 1.5, palette.antenna);
 
   // Draw eyes
   const eyeY = headY;
@@ -1390,69 +1536,40 @@ function generateBurger() {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  // Bottom bun (with texture)
+  // Bottom bun (solid color)
   ctx.fillStyle = '#8D6E63';
   ctx.fillRect(8, 24, 16, 4);
   ctx.fillRect(6, 26, 20, 2);
 
-  // Add bun texture (dithered pattern)
-  ctx.fillStyle = '#A1887F'; // Lighter brown for highlights
-  ctx.fillRect(8, 24, 1, 1);
-  ctx.fillRect(12, 25, 1, 1);
-  ctx.fillRect(18, 24, 1, 1);
-  ctx.fillRect(22, 26, 1, 1);
-
-  // Patty with grill marks
+  // Patty (solid color)
   ctx.fillStyle = '#6D4C41';
   ctx.fillRect(8, 20, 16, 4);
   ctx.fillRect(6, 22, 20, 2);
 
-  // Grill marks (darker brown)
-  ctx.fillStyle = '#4E342E';
-  ctx.fillRect(10, 20, 12, 1);
-  ctx.fillRect(10, 22, 12, 1);
-
-  // Cheese with better melting effect
+  // Cheese (solid color with simple drip)
   ctx.fillStyle = '#FFC107';
   ctx.fillRect(8, 18, 16, 2);
   ctx.fillRect(6, 18, 2, 2);
   ctx.fillRect(22, 18, 2, 2);
 
-  // Cheese highlights
-  ctx.fillStyle = '#FFD54F';
-  ctx.fillRect(10, 18, 8, 1);
-
-  // Lettuce with more texture
+  // Lettuce (solid color)
   ctx.fillStyle = '#4CAF50';
   ctx.fillRect(8, 16, 16, 2);
   ctx.fillRect(6, 16, 2, 2);
   ctx.fillRect(12, 14, 4, 2);
   ctx.fillRect(18, 14, 4, 2);
 
-  // Lettuce detail
-  ctx.fillStyle = '#66BB6A'; // Lighter green
-  ctx.fillRect(9, 16, 1, 1);
-  ctx.fillRect(14, 15, 1, 1);
-  ctx.fillRect(19, 16, 1, 1);
-
-  // Top bun with texture
+  // Top bun (solid color)
   ctx.fillStyle = '#D4A574';
   ctx.fillRect(10, 10, 12, 4);
   ctx.fillRect(8, 12, 16, 2);
   ctx.fillRect(12, 8, 8, 2);
 
-  // Bun highlights
-  ctx.fillStyle = '#E0C9A6';
-  ctx.fillRect(12, 10, 6, 2);
-
-  // More sesame seeds (6 total)
+  // Simple sesame seeds (3 total)
   ctx.fillStyle = '#F5F5DC';
   ctx.fillRect(12, 10, 2, 2);
   ctx.fillRect(18, 10, 2, 2);
-  ctx.fillRect(14, 12, 2, 2);
-  ctx.fillRect(10, 11, 1, 1);
-  ctx.fillRect(20, 11, 1, 1);
-  ctx.fillRect(16, 9, 1, 1);
+  ctx.fillRect(15, 12, 2, 2);
 
   // Black outline
   ctx.fillStyle = '#000000';
@@ -1473,43 +1590,21 @@ function generateBall() {
   // White ball body (pixel-perfect circle)
   drawPixelCircle(ctx, 16, 16, 10, '#FFFFFF');
 
-  // Blue panels (pentagon pattern instead of simple cross)
+  // Blue panels (simple cross pattern)
   ctx.fillStyle = '#2196F3';
 
-  // Center pentagon
+  // Center
   ctx.fillRect(14, 14, 4, 4);
-  ctx.fillRect(13, 15, 1, 2);
-  ctx.fillRect(18, 15, 1, 2);
 
-  // Side panels
+  // Side panels (simple cross)
   ctx.fillRect(9, 14, 3, 4);
   ctx.fillRect(20, 14, 3, 4);
   ctx.fillRect(14, 9, 4, 3);
   ctx.fillRect(14, 20, 4, 3);
 
-  // Darker blue for shading (bottom panels)
-  ctx.fillStyle = '#1976D2';
-  ctx.fillRect(14, 21, 4, 2);
-  ctx.fillRect(20, 16, 2, 3);
-
-  // Lighter blue for highlights (top panels)
-  ctx.fillStyle = '#64B5F6';
-  ctx.fillRect(14, 9, 4, 1);
-  ctx.fillRect(9, 14, 1, 2);
-
-  // Enhanced shading (bottom-right shadow)
-  ctx.fillStyle = '#E0E0E0';
-  ctx.fillRect(22, 20, 4, 4);
-  ctx.fillRect(20, 22, 2, 2);
-
-  // Darker shadow
-  ctx.fillStyle = '#BDBDBD';
-  ctx.fillRect(23, 22, 2, 2);
-
-  // Specular highlight (top-left bright spot)
+  // Simple highlight (top-left)
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(11, 11, 2, 2);
-  ctx.fillRect(10, 12, 1, 1);
 
   // Black outline
   strokePixelCircle(ctx, 16, 16, 10, '#000000', 1);
@@ -1810,125 +1905,140 @@ function main() {
   );
   console.log('✓ Generated: egg/egg.json\n');
 
-  // Generate BABY
-  console.log('Generating BABY...');
-  ensureDir(path.join(TAMA_DIR, 'baby'));
+  // Generate BABY (5 color variants)
+  console.log('Generating BABY (5 variants)...');
 
-  const babyCanvases = [];
-  const babyFrames = [];
+  for (let variant = 1; variant <= 5; variant++) {
+    const variantIndex = variant - 1; // 0-indexed
+    ensureDir(path.join(TAMA_DIR, `baby-${variant}`));
 
-  // Idle frames
-  for (let i = 1; i <= 4; i++) {
-    babyCanvases.push(generateBabyBase('neutral', i));
-    babyFrames.push(`idle-${i}`);
+    const babyCanvases = [];
+    const babyFrames = [];
+
+    // Idle frames
+    for (let i = 1; i <= 4; i++) {
+      babyCanvases.push(generateBabyBase('neutral', i, variantIndex));
+      babyFrames.push(`idle-${i}`);
+    }
+
+    // Blink frames
+    for (let i = 1; i <= 3; i++) {
+      babyCanvases.push(generateBabyBlink(i, variantIndex));
+      babyFrames.push(`blink-${i}`);
+    }
+
+    // Eat frames
+    for (let i = 1; i <= 4; i++) {
+      babyCanvases.push(generateBabyEat(i, variantIndex));
+      babyFrames.push(`eat-${i}`);
+    }
+
+    // Mood variants
+    babyCanvases.push(generateBabyBase('happy', 1, variantIndex));
+    babyFrames.push('happy');
+    babyCanvases.push(generateBabyBase('neutral', 1, variantIndex));
+    babyFrames.push('neutral');
+    babyCanvases.push(generateBabyBase('sad', 1, variantIndex));
+    babyFrames.push('sad');
+
+    // Save each frame as individual PNG file
+    babyCanvases.forEach((canvas, index) => {
+      const frameName = babyFrames[index];
+      saveCanvas(canvas, path.join(TAMA_DIR, `baby-${variant}`, `${frameName}.png`));
+    });
+    console.log(`✓ Generated: baby-${variant}/* (individual frames)`);
   }
+  console.log();
 
-  // Blink frames
-  for (let i = 1; i <= 3; i++) {
-    babyCanvases.push(generateBabyBlink(i));
-    babyFrames.push(`blink-${i}`);
+  // Generate CHILD (5 color variants)
+  console.log('Generating CHILD (5 variants)...');
+
+  for (let variant = 1; variant <= 5; variant++) {
+    const variantIndex = variant - 1;
+    ensureDir(path.join(TAMA_DIR, `child-${variant}`));
+
+    const childCanvases = [];
+    const childFrames = [];
+
+    // Idle frames
+    for (let i = 1; i <= 4; i++) {
+      childCanvases.push(generateChildBase('neutral', i, variantIndex));
+      childFrames.push(`idle-${i}`);
+    }
+
+    // Blink frames
+    for (let i = 1; i <= 3; i++) {
+      childCanvases.push(generateChildBlink(i, variantIndex));
+      childFrames.push(`blink-${i}`);
+    }
+
+    // Eat frames
+    for (let i = 1; i <= 4; i++) {
+      childCanvases.push(generateChildEat(i, variantIndex));
+      childFrames.push(`eat-${i}`);
+    }
+
+    // Mood variants
+    childCanvases.push(generateChildBase('happy', 1, variantIndex));
+    childFrames.push('happy');
+    childCanvases.push(generateChildBase('neutral', 1, variantIndex));
+    childFrames.push('neutral');
+    childCanvases.push(generateChildBase('sad', 1, variantIndex));
+    childFrames.push('sad');
+
+    // Save each frame as individual PNG file
+    childCanvases.forEach((canvas, index) => {
+      const frameName = childFrames[index];
+      saveCanvas(canvas, path.join(TAMA_DIR, `child-${variant}`, `${frameName}.png`));
+    });
+    console.log(`✓ Generated: child-${variant}/* (individual frames)`);
   }
+  console.log();
 
-  // Eat frames
-  for (let i = 1; i <= 4; i++) {
-    babyCanvases.push(generateBabyEat(i));
-    babyFrames.push(`eat-${i}`);
+  // Generate ADULT (5 color variants)
+  console.log('Generating ADULT (5 variants)...');
+
+  for (let variant = 1; variant <= 5; variant++) {
+    const variantIndex = variant - 1;
+    ensureDir(path.join(TAMA_DIR, `adult-${variant}`));
+
+    const adultCanvases = [];
+    const adultFrames = [];
+
+    // Idle frames
+    for (let i = 1; i <= 4; i++) {
+      adultCanvases.push(generateAdultBase('neutral', i, variantIndex));
+      adultFrames.push(`idle-${i}`);
+    }
+
+    // Blink frames
+    for (let i = 1; i <= 3; i++) {
+      adultCanvases.push(generateAdultBlink(i, variantIndex));
+      adultFrames.push(`blink-${i}`);
+    }
+
+    // Eat frames
+    for (let i = 1; i <= 4; i++) {
+      adultCanvases.push(generateAdultEat(i, variantIndex));
+      adultFrames.push(`eat-${i}`);
+    }
+
+    // Mood variants
+    adultCanvases.push(generateAdultBase('happy', 1, variantIndex));
+    adultFrames.push('happy');
+    adultCanvases.push(generateAdultBase('neutral', 1, variantIndex));
+    adultFrames.push('neutral');
+    adultCanvases.push(generateAdultBase('sad', 1, variantIndex));
+    adultFrames.push('sad');
+
+    // Save each frame as individual PNG file
+    adultCanvases.forEach((canvas, index) => {
+      const frameName = adultFrames[index];
+      saveCanvas(canvas, path.join(TAMA_DIR, `adult-${variant}`, `${frameName}.png`));
+    });
+    console.log(`✓ Generated: adult-${variant}/* (individual frames)`);
   }
-
-  // Mood variants
-  babyCanvases.push(generateBabyBase('happy', 1));
-  babyFrames.push('happy');
-  babyCanvases.push(generateBabyBase('neutral', 1));
-  babyFrames.push('neutral');
-  babyCanvases.push(generateBabyBase('sad', 1));
-  babyFrames.push('sad');
-
-  // Save each frame as individual PNG file
-  babyCanvases.forEach((canvas, index) => {
-    const frameName = babyFrames[index];
-    saveCanvas(canvas, path.join(TAMA_DIR, 'baby', `${frameName}.png`));
-  });
-  console.log('✓ Generated: baby/* (individual frames)\n');
-
-  // Generate CHILD
-  console.log('Generating CHILD...');
-  ensureDir(path.join(TAMA_DIR, 'child'));
-
-  const childCanvases = [];
-  const childFrames = [];
-
-  // Idle frames
-  for (let i = 1; i <= 4; i++) {
-    childCanvases.push(generateChildBase('neutral', i));
-    childFrames.push(`idle-${i}`);
-  }
-
-  // Blink frames
-  for (let i = 1; i <= 3; i++) {
-    childCanvases.push(generateChildBlink(i));
-    childFrames.push(`blink-${i}`);
-  }
-
-  // Eat frames
-  for (let i = 1; i <= 4; i++) {
-    childCanvases.push(generateChildEat(i));
-    childFrames.push(`eat-${i}`);
-  }
-
-  // Mood variants
-  childCanvases.push(generateChildBase('happy', 1));
-  childFrames.push('happy');
-  childCanvases.push(generateChildBase('neutral', 1));
-  childFrames.push('neutral');
-  childCanvases.push(generateChildBase('sad', 1));
-  childFrames.push('sad');
-
-  // Save each frame as individual PNG file
-  childCanvases.forEach((canvas, index) => {
-    const frameName = childFrames[index];
-    saveCanvas(canvas, path.join(TAMA_DIR, 'child', `${frameName}.png`));
-  });
-  console.log('✓ Generated: child/* (individual frames)\n');
-
-  // Generate ADULT
-  console.log('Generating ADULT...');
-  ensureDir(path.join(TAMA_DIR, 'adult'));
-
-  const adultCanvases = [];
-  const adultFrames = [];
-
-  // Idle frames
-  for (let i = 1; i <= 4; i++) {
-    adultCanvases.push(generateAdultBase('neutral', i));
-    adultFrames.push(`idle-${i}`);
-  }
-
-  // Blink frames
-  for (let i = 1; i <= 3; i++) {
-    adultCanvases.push(generateAdultBlink(i));
-    adultFrames.push(`blink-${i}`);
-  }
-
-  // Eat frames
-  for (let i = 1; i <= 4; i++) {
-    adultCanvases.push(generateAdultEat(i));
-    adultFrames.push(`eat-${i}`);
-  }
-
-  // Mood variants
-  adultCanvases.push(generateAdultBase('happy', 1));
-  adultFrames.push('happy');
-  adultCanvases.push(generateAdultBase('neutral', 1));
-  adultFrames.push('neutral');
-  adultCanvases.push(generateAdultBase('sad', 1));
-  adultFrames.push('sad');
-
-  // Save each frame as individual PNG file
-  adultCanvases.forEach((canvas, index) => {
-    const frameName = adultFrames[index];
-    saveCanvas(canvas, path.join(TAMA_DIR, 'adult', `${frameName}.png`));
-  });
-  console.log('✓ Generated: adult/* (individual frames)\n');
+  console.log();
 
   // Generate ITEMS
   console.log('Generating ITEMS...');
