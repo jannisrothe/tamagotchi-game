@@ -216,7 +216,7 @@ const gameState = {
     health: 100,
     age: 0,
     stage: 'egg',
-    colorVariant: Math.floor(Math.random() * 5) + 1, // Random 1-5
+    colorVariant: Math.floor(Math.random() * 6) + 1, // Random 1-6
     isDirty: false,
     isSick: false,
     isAlive: true,

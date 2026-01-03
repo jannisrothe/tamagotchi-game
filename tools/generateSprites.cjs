@@ -55,29 +55,29 @@ const COLORS = {
   }
 };
 
-// Color variation palettes (5 variants for baby/child/adult)
+// Color variation palettes (6 variants for baby/child/adult)
 const COLOR_PALETTES = [
-  { // Variant 1: Classic (current colors)
+  { // Variant 1: Teal/Cyan Series
     baby: {
-      body: '#FFB6B9',
-      bodyLight: '#FFC7D8',
-      bodyDark: '#FF9AA0',
-      antenna: '#FF9AA0'
+      body: '#B8E6E1',
+      bodyLight: '#D0F0ED',
+      bodyDark: '#9DD6D0',
+      antenna: '#9DD6D0'
     },
     child: {
-      body: '#92E3A9',
-      bodyLight: '#A8E6CF',
-      bodyDark: '#7AD699',
-      antenna: '#7AD699',
-      limb: '#7AD699'
+      body: '#7DD3C0',
+      bodyLight: '#9BE0D0',
+      bodyDark: '#5FC2AC',
+      antenna: '#5FC2AC',
+      limb: '#5FC2AC'
     },
     adult: {
-      body: '#FF9A56',
-      bodyLight: '#FFB366',
-      bodyDark: '#FF8543',
-      antenna: '#FF8543',
-      limb: '#FF8543',
-      wing: '#FFC794'
+      body: '#4DB8A3',
+      bodyLight: '#6CC7B4',
+      bodyDark: '#3CA68D',
+      antenna: '#3CA68D',
+      limb: '#3CA68D',
+      wing: '#7DD3C0'
     }
   },
   { // Variant 2: Blue
@@ -170,6 +170,29 @@ const COLOR_PALETTES = [
       antenna: '#FF5252',
       limb: '#FF5252',
       wing: '#FF9999'
+    }
+  },
+  { // Variant 6: Orange Series
+    baby: {
+      body: '#FFE0B8',
+      bodyLight: '#FFF0D6',
+      bodyDark: '#FFD09A',
+      antenna: '#FFD09A'
+    },
+    child: {
+      body: '#FFC680',
+      bodyLight: '#FFD8A0',
+      bodyDark: '#FFB360',
+      antenna: '#FFB360',
+      limb: '#FFB360'
+    },
+    adult: {
+      body: '#FF9A56',
+      bodyLight: '#FFB366',
+      bodyDark: '#FF8543',
+      antenna: '#FF8543',
+      limb: '#FF8543',
+      wing: '#FFC794'
     }
   }
 ];
@@ -1905,10 +1928,10 @@ function main() {
   );
   console.log('✓ Generated: egg/egg.json\n');
 
-  // Generate BABY (5 color variants)
-  console.log('Generating BABY (5 variants)...');
+  // Generate BABY (6 color variants)
+  console.log('Generating BABY (6 variants)...');
 
-  for (let variant = 1; variant <= 5; variant++) {
+  for (let variant = 1; variant <= 6; variant++) {
     const variantIndex = variant - 1; // 0-indexed
     ensureDir(path.join(TAMA_DIR, `baby-${variant}`));
 
@@ -1950,10 +1973,10 @@ function main() {
   }
   console.log();
 
-  // Generate CHILD (5 color variants)
-  console.log('Generating CHILD (5 variants)...');
+  // Generate CHILD (6 color variants)
+  console.log('Generating CHILD (6 variants)...');
 
-  for (let variant = 1; variant <= 5; variant++) {
+  for (let variant = 1; variant <= 6; variant++) {
     const variantIndex = variant - 1;
     ensureDir(path.join(TAMA_DIR, `child-${variant}`));
 
@@ -1995,10 +2018,10 @@ function main() {
   }
   console.log();
 
-  // Generate ADULT (5 color variants)
-  console.log('Generating ADULT (5 variants)...');
+  // Generate ADULT (6 color variants)
+  console.log('Generating ADULT (6 variants)...');
 
-  for (let variant = 1; variant <= 5; variant++) {
+  for (let variant = 1; variant <= 6; variant++) {
     const variantIndex = variant - 1;
     ensureDir(path.join(TAMA_DIR, `adult-${variant}`));
 
