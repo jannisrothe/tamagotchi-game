@@ -126,7 +126,7 @@ let spritesLoaded = false;
 
 function loadSprites() {
     // Base path for assets (works in dev and production)
-    const basePath = '/tamagotchi-game/';
+    const basePath = './';
     const spriteLoadPromises = [];
 
     // Load egg
