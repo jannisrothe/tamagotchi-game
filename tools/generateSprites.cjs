@@ -590,8 +590,8 @@ function generateBabyBlink(frame, variantIndex = 0) {
   ctx.stroke();
 
   // Draw antenna
-  drawCircle(ctx, 16, 6, 1, COLORS.baby.antenna);
-  ctx.strokeStyle = COLORS.baby.antenna;
+  drawCircle(ctx, 16, 6, 1, palette.antenna);
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(16, 7);
@@ -644,21 +644,21 @@ function generateBabyEat(frame, variantIndex = 0) {
   const bodyY = 18;
 
   // Draw blob body - base color
-  ctx.fillStyle = COLORS.baby.body;
+  ctx.fillStyle = palette.body;
   ctx.beginPath();
   ctx.ellipse(16, bodyY, 12, 12, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Light highlight (top-left)
-  ctx.fillStyle = COLORS.baby.bodyLight;
+  ctx.fillStyle = palette.bodyLight;
   ctx.beginPath();
   ctx.arc(12, bodyY - 4, 5, 0, Math.PI * 2);
   ctx.fill();
 
   // Dark shadow (bottom-right)
-  ctx.fillStyle = COLORS.baby.bodyDark;
-  drawPixel(ctx, 22, bodyY + 6, COLORS.baby.bodyDark, 2);
-  drawPixel(ctx, 21, bodyY + 8, COLORS.baby.bodyDark, 2);
+  ctx.fillStyle = palette.bodyDark;
+  drawPixel(ctx, 22, bodyY + 6, palette.bodyDark, 2);
+  drawPixel(ctx, 21, bodyY + 8, palette.bodyDark, 2);
 
   // Black outline (2px thick for retro look)
   ctx.strokeStyle = '#000000';
@@ -668,8 +668,8 @@ function generateBabyEat(frame, variantIndex = 0) {
   ctx.stroke();
 
   // Draw antenna
-  drawCircle(ctx, 16, 6, 1, COLORS.baby.antenna);
-  ctx.strokeStyle = COLORS.baby.antenna;
+  drawCircle(ctx, 16, 6, 1, palette.antenna);
+  ctx.strokeStyle = palette.antenna;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(16, 7);

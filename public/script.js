@@ -204,9 +204,6 @@ function loadSprites() {
     });
 }
 
-// Load sprites on page load
-loadSprites();
-
 // ==========================================
 // GAME STATE
 // ==========================================
@@ -228,7 +225,11 @@ const gameState = {
     petName: 'TAMA',
     poops: [],
     starvationTimer: 0, // Tracks time spent at 0 hunger
+    healthTimer: 0, // Tracks time spent at 0 health
 };
+
+// Load sprites on page load (after gameState is defined)
+loadSprites();
 
 // Tamagotchi sprite
 const tama = {
@@ -584,8 +585,15 @@ setInterval(() => {
         gameState.starvationTimer = 0; // Reset if fed
     }
 
-    // Die if starved for 1440 minutes (86400 seconds) OR health hits 0
-    if ((gameState.starvationTimer >= 86400 || gameState.health === 0) &&
+    // Track time at 0 health
+    if (gameState.health === 0) {
+        gameState.healthTimer++;
+    } else {
+        gameState.healthTimer = 0; // Reset if health recovered
+    }
+
+    // Die if starved for 24 hours (86400 seconds) OR health at 0 for 24 hours
+    if ((gameState.starvationTimer >= 86400 || gameState.healthTimer >= 86400) &&
         gameState.stage !== 'egg' && gameState.stage !== 'baby') {
         gameState.isAlive = false;
     }
