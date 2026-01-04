@@ -139,15 +139,12 @@ function loadSprites() {
         };
     }));
 
-    // Get color variant (defaults to 1 if not set yet)
-    const variant = gameState.colorVariant || 1;
-
-    // Load baby sprites (variant-based)
+    // Load baby sprites (no variants - fixed paths)
     const babyFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                         'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     babyFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/baby-${variant}/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/baby/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.baby[frame] = img;
@@ -156,12 +153,12 @@ function loadSprites() {
         }));
     });
 
-    // Load child sprites (variant-based)
+    // Load child sprites (no variants - fixed paths)
     const childFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     childFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/child-${variant}/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/child/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.child[frame] = img;
@@ -170,12 +167,12 @@ function loadSprites() {
         }));
     });
 
-    // Load adult sprites (variant-based)
+    // Load adult sprites (no variants - fixed paths)
     const adultFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     adultFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/adult-${variant}/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/adult/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.adult[frame] = img;
@@ -213,7 +210,7 @@ const gameState = {
     health: 100,
     age: 0,
     stage: 'egg',
-    colorVariant: Math.floor(Math.random() * 6) + 1, // Random 1-6
+    colorVariant: 1, // Fixed - no random variants (directories don't exist)
     isDirty: false,
     isSick: false,
     isAlive: true,
