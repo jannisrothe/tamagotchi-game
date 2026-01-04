@@ -15,12 +15,12 @@ document.getElementById('game-container').appendChild(canvas);
 // SOUND EFFECTS (Howler.js)
 // ==========================================
 const sounds = {
-    eat: new Howl({ src: ['./assets/audio/eat.wav'], volume: 0.7 }),
-    play: new Howl({ src: ['./assets/audio/play.wav'], volume: 0.7 }),
-    clean: new Howl({ src: ['./assets/audio/clean.wav'], volume: 0.7 }),
-    heal: new Howl({ src: ['./assets/audio/heal.wav'], volume: 0.7 }),
-    evolve: new Howl({ src: ['./assets/audio/evolve.wav'], volume: 0.7 }),
-    click: new Howl({ src: ['./assets/audio/click.wav'], volume: 0.7 })
+    eat: new Howl({ src: ['assets/audio/eat.wav'], volume: 0.7 }),
+    play: new Howl({ src: ['assets/audio/play.wav'], volume: 0.7 }),
+    clean: new Howl({ src: ['assets/audio/clean.wav'], volume: 0.7 }),
+    heal: new Howl({ src: ['assets/audio/heal.wav'], volume: 0.7 }),
+    evolve: new Howl({ src: ['assets/audio/evolve.wav'], volume: 0.7 }),
+    click: new Howl({ src: ['assets/audio/click.wav'], volume: 0.7 })
 };
 
 // AUDIO SETTINGS
@@ -63,7 +63,7 @@ function initMusic() {
             console.log('Initializing background music...');
 
             bgMusic = new Howl({
-                src: ['./assets/audio/background.wav'],
+                src: ['assets/audio/background.wav'],
                 loop: true,
                 volume: audioSettings.musicVolume
             });
