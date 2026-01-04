@@ -12,15 +12,15 @@ ctx.imageSmoothingEnabled = false; // Disable anti-aliasing for crisp pixels
 document.getElementById('game-container').appendChild(canvas);
 
 // ==========================================
-// SOUND EFFECTS (jsfxr)
+// SOUND EFFECTS (Howler.js)
 // ==========================================
 const sounds = {
-    eat: [0,,0.1487,,0.2732,0.4142,,,,,,,,,,0.6493,,,1,,,,,0.5],
-    play: [0,,0.0837,,0.1916,0.3402,,-0.1437,,,,,,0.3189,,,,,1,,,,,0.5],
-    clean: [0,,0.1516,,0.1953,0.4648,,0.1681,,,,,,0.2391,,,,,1,,,,,0.5],
-    heal: [0,,0.2113,,0.3364,0.5405,,0.0918,,,,,,0.2818,,,,,1,,,,,0.5],
-    evolve: [0,,0.3116,,0.3827,0.6021,,0.2393,,,,,0.0451,0.5719,,,,,1,,,0.2131,,0.5],
-    click: [0,,0.01,,0.1,0.15,,,,,,,,,,,,,1,,,,,0.1],
+    eat: new Howl({ src: ['assets/audio/eat.wav'], volume: 0.7 }),
+    play: new Howl({ src: ['assets/audio/play.wav'], volume: 0.7 }),
+    clean: new Howl({ src: ['assets/audio/clean.wav'], volume: 0.7 }),
+    heal: new Howl({ src: ['assets/audio/heal.wav'], volume: 0.7 }),
+    evolve: new Howl({ src: ['assets/audio/evolve.wav'], volume: 0.7 }),
+    click: new Howl({ src: ['assets/audio/click.wav'], volume: 0.7 })
 };
 
 // AUDIO SETTINGS
@@ -40,54 +40,34 @@ function isSleepTime() {
     return hour >= 20 || hour < 8; // 8 PM to 8 AM local time
 }
 
-function playSound(soundArray) {
+function playSound(sound) {
     try {
-        if (audioLibrariesReady && typeof jsfxr !== 'undefined' && audioSettings.soundEnabled) {
-            const audio = jsfxr(soundArray);
-            audio.volume = audioSettings.soundVolume;
-            audio.play().catch(err => console.log('Audio play blocked:', err));
+        if (audioSettings.soundEnabled && sound) {
+            sound.volume(audioSettings.soundVolume);
+            sound.play();
         }
     } catch(e) {
         console.error('Sound play failed:', e);
     }
 }
 
-// Check if audio libraries are ready
-let audioLibrariesReady = false;
-
-window.addEventListener('load', () => {
-    audioLibrariesReady = (typeof jsfxr !== 'undefined' && typeof TinyMusic !== 'undefined');
-    console.log('Audio libraries ready:', audioLibrariesReady);
-    console.log('jsfxr:', typeof jsfxr !== 'undefined');
-    console.log('TinyMusic:', typeof TinyMusic !== 'undefined');
-
-    if (!audioLibrariesReady) {
-        console.error('Audio libraries failed to load!');
-    }
-});
-
 // ==========================================
-// BACKGROUND MUSIC (TinyMusic)
+// BACKGROUND MUSIC (Howler.js)
 // ==========================================
 let bgMusic = null;
 let musicStarted = false;
 
 function initMusic() {
     try {
-        if (audioLibrariesReady && typeof TinyMusic !== 'undefined' && !musicStarted && audioSettings.musicEnabled) {
+        if (!musicStarted && audioSettings.musicEnabled) {
             console.log('Initializing background music...');
-            const tempo = 120;
-            const sequence = new TinyMusic.Sequence(null, tempo, [
-                'C4 q', 'E4 q', 'G4 q', 'E4 q',
-                'C4 q', 'E4 q', 'G4 h',
-                'D4 q', 'F4 q', 'A4 q', 'F4 q',
-                'D4 q', 'F4 q', 'A4 h'
-            ]);
 
-            bgMusic = new TinyMusic.Player();
-            bgMusic.loop = true;
-            bgMusic.volume = audioSettings.musicVolume;
-            bgMusic.add(sequence);
+            bgMusic = new Howl({
+                src: ['assets/audio/background.wav'],
+                loop: true,
+                volume: audioSettings.musicVolume
+            });
+
             bgMusic.play();
             musicStarted = true;
             console.log('Background music started!');
@@ -104,12 +84,6 @@ document.addEventListener('click', () => {
         initMusic();
     }
 }, { once: true });
-
-// Check if libraries loaded
-window.addEventListener('load', () => {
-    console.log('jsfxr loaded:', typeof jsfxr !== 'undefined');
-    console.log('TinyMusic loaded:', typeof TinyMusic !== 'undefined');
-});
 
 // ==========================================
 // SPRITE LOADING
@@ -458,12 +432,12 @@ function animate(currentTime) {
         isSleeping = true;
         console.log('Tamagotchi is going to sleep (8 PM - 8 AM)');
         // Pause music
-        if (bgMusic && bgMusic.pause) bgMusic.pause();
+        if (bgMusic) bgMusic.pause();
     } else if (!shouldSleep && isSleeping) {
         isSleeping = false;
         console.log('Tamagotchi is waking up!');
         // Resume music
-        if (bgMusic && audioSettings.musicEnabled && bgMusic.play) bgMusic.play();
+        if (bgMusic && audioSettings.musicEnabled) bgMusic.play();
     }
 
     // Skip game updates during sleep
@@ -1127,8 +1101,10 @@ document.getElementById('music-toggle')?.addEventListener('click', () => {
     updateAudioUI();
     if (audioSettings.musicEnabled) {
         playSound(sounds.click);
-        if (bgMusic && musicStarted) {
+        if (bgMusic) {
             bgMusic.play();
+        } else {
+            initMusic();
         }
     } else {
         if (bgMusic) {
@@ -1146,7 +1122,7 @@ document.getElementById('music-volume')?.addEventListener('input', (e) => {
     audioSettings.musicVolume = e.target.value / 100;
     document.getElementById('music-value').textContent = e.target.value + '%';
     if (bgMusic) {
-        bgMusic.volume = audioSettings.musicVolume;
+        bgMusic.volume(audioSettings.musicVolume);
     }
 });
 
