@@ -178,7 +178,7 @@ function loadSprites() {
 }
 
 function applyEnvironmentBackground() {
-    const container = document.getElementById('game-container');
+    const container = document.getElementById('game-container').parentElement;
     const variant = gameState.colorVariant || 1;
 
     // Mapping: 1=Water, 2=Space, 3=Air, 4=Earth, 5=Fire
