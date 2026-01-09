@@ -578,9 +578,8 @@ function drawTamagotchi() {
 }
 
 function drawSleepingTamagotchi() {
-    // Clear and draw background
-    ctx.fillStyle = '#c8e6c9';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Draw environment background first
+    drawEnvironmentBackground();
 
     // Draw sleeping Tamagotchi (use neutral sprite or egg if no other stage)
     if (!spritesLoaded) return;
