@@ -113,12 +113,13 @@ function loadSprites() {
         };
     }));
 
-    // Load baby sprites (no variants - fixed paths)
+    // Load baby sprites (variant paths)
+    const variant = gameState.colorVariant || 1;
     const babyFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                         'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     babyFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/baby/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/baby-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.baby[frame] = img;
@@ -127,12 +128,12 @@ function loadSprites() {
         }));
     });
 
-    // Load child sprites (no variants - fixed paths)
+    // Load child sprites (variant paths)
     const childFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     childFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/child/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/child-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.child[frame] = img;
@@ -141,12 +142,12 @@ function loadSprites() {
         }));
     });
 
-    // Load adult sprites (no variants - fixed paths)
+    // Load adult sprites (variant paths)
     const adultFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     adultFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/adult/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/adult-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.adult[frame] = img;
@@ -172,7 +173,22 @@ function loadSprites() {
     Promise.all(spriteLoadPromises).then(() => {
         console.log('✓ All sprites loaded!');
         spritesLoaded = true;
+        applyEnvironmentBackground();
     });
+}
+
+function applyEnvironmentBackground() {
+    const container = document.getElementById('game-container');
+    const variant = gameState.colorVariant || 1;
+
+    // Mapping: 1=Water, 2=Space, 3=Air, 4=Earth, 5=Fire
+    const backgrounds = ['bg-water', 'bg-space', 'bg-air', 'bg-earth', 'bg-fire'];
+
+    // Remove all background classes
+    backgrounds.forEach(bg => container.classList.remove(bg));
+
+    // Add appropriate background
+    container.classList.add(backgrounds[variant - 1]);
 }
 
 // ==========================================
@@ -959,6 +975,7 @@ function loadGame() {
 
         // Reload sprites if color variant changed
         loadSprites();
+        applyEnvironmentBackground();
 
         if (gameState.isPaused) {
             document.getElementById('pause-icon').textContent = '▶';
@@ -1026,6 +1043,13 @@ function submitName() {
     if (name.length > 0) {
         gameState.petName = name.toUpperCase().substring(0, 12);
         document.getElementById('pet-name').textContent = gameState.petName;
+
+        // Randomly select variant 1-5 on new game
+        if (!gameState.colorVariant || gameState.colorVariant === 1) {
+            gameState.colorVariant = Math.floor(Math.random() * 5) + 1;
+        }
+        applyEnvironmentBackground();
+
         const modal = document.getElementById('name-modal');
         modal.classList.add('hidden');
         modal.classList.remove('flex');
