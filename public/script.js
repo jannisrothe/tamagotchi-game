@@ -515,7 +515,7 @@ function drawTamagotchi() {
         } else {
             // Show mood-based sprite or idle animation
             const avgStat = (gameState.hunger + gameState.happiness + gameState.health) / 3;
-            const mood = avgStat >= 70 ? 'happy' : avgStat >= 40 ? 'neutral' : 'sad';
+            const mood = tama.isDead ? 'sad' : (avgStat >= 70 ? 'happy' : avgStat >= 40 ? 'neutral' : 'sad');
 
             if (stageSprites[mood]) {
                 sprite = stageSprites[mood];
@@ -569,13 +569,47 @@ function drawTamagotchi() {
             ctx.save();
             ctx.scale(heartScale, heartScale);
             ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(sprites.items.heart, -16, -16, 32, 32);
-            ctx.restore();
-        }
+         ctx.drawImage(sprites.items.heart, -16, -16, 32, 32);
+         ctx.restore();
+     }
+     ctx.restore();
+ }
 
-        ctx.restore();
-    }
-}
+    // Draw skull overlay when dead
+    if (tama.isDead) {
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // Draw skull emoji or simple skull shape
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+
+        // Skull shape
+        ctx.beginPath();
+        ctx.arc(0, -5, 15, 0, Math.PI * 2); // Head
+        ctx.fill();
+        ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(-5, -8, 2, 0, Math.PI * 2);
+        ctx.arc(5, -8, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mouth (jagged)
+        ctx.beginPath();
+        ctx.moveTo(-6, 0);
+        ctx.lineTo(-3, -2);
+        ctx.lineTo(0, 0);
+        ctx.lineTo(3, -2);
+        ctx.lineTo(6, 0);
+        ctx.stroke();
+
+         ctx.restore();
+     }
+ }
 
 function drawSleepingTamagotchi() {
     // Draw environment background first
@@ -823,6 +857,7 @@ setInterval(() => {
     if ((gameState.starvationTimer >= 86400 || gameState.healthTimer >= 86400) &&
         gameState.stage !== 'egg' && gameState.stage !== 'baby') {
         gameState.isAlive = false;
+        handleDeath();
     }
 
     updateUI();
@@ -1158,6 +1193,27 @@ function showMessage(msg) {
     }, 2000);
 }
 
+function handleDeath() {
+    // Show permanent death message
+    const msgEl = document.getElementById('status-message');
+    msgEl.textContent = '💀 GAME OVER - YOUR TAMAGOTCHI HAS DIED! 💀';
+    msgEl.style.color = '#ff6b6b';
+    msgEl.style.fontWeight = 'bold';
+
+    // Disable interaction buttons
+    const buttons = ['feed-btn', 'play-btn', 'clean-btn', 'medicine-btn'];
+    buttons.forEach(id => {
+        const btn = document.getElementById(id);
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+    });
+
+    // Force sad expression
+    gameState.isSick = false; // Override sick status to show pure sadness
+    tama.isDead = true; // Add flag for drawing logic
+}
+
 function saveGame() {
     const data = {
         hunger: gameState.hunger,
@@ -1212,6 +1268,12 @@ function loadGame() {
         gameState.colorVariant = data.colorVariant || 1;
 
         document.getElementById('pet-name').textContent = gameState.petName;
+
+        // Handle death state if loading a dead pet
+        if (!gameState.isAlive) {
+            tama.isDead = true;
+            handleDeath();
+        }
 
         // Reload sprites if color variant changed
         loadSprites();

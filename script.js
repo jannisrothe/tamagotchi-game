@@ -569,9 +569,11 @@ function drawTamagotchi() {
             ctx.save();
             ctx.scale(heartScale, heartScale);
             ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(sprites.items.heart, -16, -16, 32, 32);
-        ctx.restore();
-    }
+         ctx.drawImage(sprites.items.heart, -16, -16, 32, 32);
+         ctx.restore();
+     }
+     ctx.restore();
+ }
 
     // Draw skull overlay when dead
     if (tama.isDead) {
@@ -605,10 +607,9 @@ function drawTamagotchi() {
         ctx.lineTo(6, 0);
         ctx.stroke();
 
-        ctx.restore();
-    }
-}
-}
+         ctx.restore();
+     }
+ }
 
 function drawSleepingTamagotchi() {
     // Draw environment background first

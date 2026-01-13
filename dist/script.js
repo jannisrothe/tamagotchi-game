@@ -113,12 +113,13 @@ function loadSprites() {
         };
     }));
 
-    // Load baby sprites (no variants - fixed paths)
+    // Load baby sprites (variant paths)
+    const variant = gameState.colorVariant || 1;
     const babyFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                         'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     babyFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/baby/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/baby-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.baby[frame] = img;
@@ -127,12 +128,12 @@ function loadSprites() {
         }));
     });
 
-    // Load child sprites (no variants - fixed paths)
+    // Load child sprites (variant paths)
     const childFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     childFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/child/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/child-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.child[frame] = img;
@@ -141,12 +142,12 @@ function loadSprites() {
         }));
     });
 
-    // Load adult sprites (no variants - fixed paths)
+    // Load adult sprites (variant paths)
     const adultFrames = ['idle-1', 'idle-2', 'idle-3', 'idle-4', 'blink-1', 'blink-2', 'blink-3',
                          'eat-1', 'eat-2', 'eat-3', 'eat-4', 'happy', 'neutral', 'sad'];
     adultFrames.forEach(frame => {
         const img = new Image();
-        img.src = `${basePath}assets/sprites/tamagotchi/adult/${frame}.png`;
+        img.src = `${basePath}assets/sprites/tamagotchi/adult-${variant}/${frame}.png`;
         spriteLoadPromises.push(new Promise(resolve => {
             img.onload = () => {
                 sprites.adult[frame] = img;
@@ -172,6 +173,263 @@ function loadSprites() {
     Promise.all(spriteLoadPromises).then(() => {
         console.log('✓ All sprites loaded!');
         spritesLoaded = true;
+        applyEnvironmentBackground();
+    });
+}
+
+function applyEnvironmentBackground() {
+    // Environment backgrounds now rendered on canvas
+    // This function kept for backwards compatibility
+}
+
+function drawEnvironmentBackground() {
+    const variant = gameState.colorVariant || 1;
+
+    // Clear canvas first
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    switch(variant) {
+        case 1: // Water
+            drawWaterBackground();
+            break;
+        case 2: // Space
+            drawSpaceBackground();
+            break;
+        case 3: // Air
+            drawAirBackground();
+            break;
+        case 4: // Earth
+            drawEarthBackground();
+            break;
+        case 5: // Fire
+            drawFireBackground();
+            break;
+        default:
+            drawWaterBackground();
+    }
+}
+
+// Water: Blue gradient with large wavy lines and bubbles
+function drawWaterBackground() {
+    // Gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#4A90E2');
+    gradient.addColorStop(1, '#5EC9E0');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Large wavy lines (3-4 waves)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        const yOffset = 60 + (i * 60);
+        for (let x = 0; x <= canvas.width; x += 20) {
+            const y = yOffset + Math.sin((x + i * 30) * 0.05) * 15;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    // Large bubbles (5-7 bubbles)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+    const bubbles = [
+        {x: 40, y: 50, r: 12},
+        {x: 180, y: 80, r: 8},
+        {x: 120, y: 160, r: 10},
+        {x: 200, y: 200, r: 6},
+        {x: 70, y: 210, r: 9}
+    ];
+    bubbles.forEach(bubble => {
+        ctx.beginPath();
+        ctx.arc(bubble.x, bubble.y, bubble.r, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+// Space: Dark purple gradient with large stars
+function drawSpaceBackground() {
+    // Gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#2C1F4A');
+    gradient.addColorStop(1, '#5B4B8A');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Large stars (8-12 stars of varying sizes)
+    const stars = [
+        {x: 30, y: 30, size: 3},
+        {x: 80, y: 60, size: 2},
+        {x: 200, y: 40, size: 4},
+        {x: 150, y: 100, size: 2.5},
+        {x: 50, y: 150, size: 3.5},
+        {x: 220, y: 180, size: 2},
+        {x: 100, y: 200, size: 3},
+        {x: 180, y: 220, size: 2.5},
+        {x: 60, y: 90, size: 2},
+        {x: 190, y: 130, size: 3}
+    ];
+
+    stars.forEach(star => {
+        // Draw 4-pointed star
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI / 2) - Math.PI / 4;
+            const x = star.x + Math.cos(angle) * star.size;
+            const y = star.y + Math.sin(angle) * star.size;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+
+            // Inner point
+            const innerAngle = angle + Math.PI / 4;
+            const ix = star.x + Math.cos(innerAngle) * (star.size * 0.4);
+            const iy = star.y + Math.sin(innerAngle) * (star.size * 0.4);
+            ctx.lineTo(ix, iy);
+        }
+        ctx.closePath();
+        ctx.fill();
+    });
+}
+
+// Air: Pink/blue gradient with large cloud shapes
+function drawAirBackground() {
+    // Gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#FFB5D8');
+    gradient.addColorStop(1, '#AED9E0');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Large fluffy clouds (3-4 clouds)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+
+    // Cloud 1 (top left)
+    drawCloud(60, 50, 40);
+
+    // Cloud 2 (top right)
+    drawCloud(180, 70, 35);
+
+    // Cloud 3 (bottom center)
+    drawCloud(120, 190, 45);
+}
+
+function drawCloud(x, y, size) {
+    ctx.beginPath();
+    ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.4, 0, Math.PI * 2);
+    ctx.arc(x - size * 0.3, y - size * 0.1, size * 0.35, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.1, y + size * 0.3, size * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// Earth: Green/brown gradient with grass and mountain silhouettes
+function drawEarthBackground() {
+    // Gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#8BC34A');
+    gradient.addColorStop(1, '#D4A574');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Mountain silhouettes (2-3 mountains)
+    ctx.fillStyle = 'rgba(62, 123, 39, 0.3)';
+
+    // Mountain 1 (left)
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height);
+    ctx.lineTo(0, 150);
+    ctx.lineTo(60, 80);
+    ctx.lineTo(120, 140);
+    ctx.lineTo(120, canvas.height);
+    ctx.closePath();
+    ctx.fill();
+
+    // Mountain 2 (right)
+    ctx.beginPath();
+    ctx.moveTo(140, canvas.height);
+    ctx.lineTo(140, 120);
+    ctx.lineTo(190, 60);
+    ctx.lineTo(canvas.width, 110);
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.closePath();
+    ctx.fill();
+
+    // Grass at bottom (6-8 blades)
+    ctx.strokeStyle = 'rgba(62, 123, 39, 0.5)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 8; i++) {
+        const x = 20 + (i * 30);
+        const baseY = canvas.height - 10;
+        ctx.beginPath();
+        ctx.moveTo(x, baseY);
+        ctx.quadraticCurveTo(x + 5, baseY - 20, x + 2, baseY - 35);
+        ctx.stroke();
+    }
+}
+
+// Fire: Red/orange gradient with large flame shapes
+function drawFireBackground() {
+    // Gradient background
+    const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+    gradient.addColorStop(0, '#FF5252');
+    gradient.addColorStop(1, '#FF9800');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Large flame shapes (4-5 flames)
+    const flames = [
+        {x: 50, y: canvas.height, height: 120, width: 40},
+        {x: 120, y: canvas.height, height: 140, width: 50},
+        {x: 180, y: canvas.height, height: 100, width: 35},
+        {x: 210, y: canvas.height, height: 130, width: 45}
+    ];
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    flames.forEach(flame => {
+        ctx.beginPath();
+        ctx.moveTo(flame.x, flame.y);
+
+        // Left curve
+        ctx.quadraticCurveTo(
+            flame.x - flame.width * 0.3,
+            flame.y - flame.height * 0.5,
+            flame.x,
+            flame.y - flame.height
+        );
+
+        // Top point
+        ctx.quadraticCurveTo(
+            flame.x + flame.width * 0.2,
+            flame.y - flame.height * 1.1,
+            flame.x + flame.width * 0.5,
+            flame.y - flame.height * 0.8
+        );
+
+        // Right curve
+        ctx.quadraticCurveTo(
+            flame.x + flame.width * 0.7,
+            flame.y - flame.height * 0.5,
+            flame.x,
+            flame.y
+        );
+
+        ctx.fill();
+    });
+
+    // Embers (small floating circles)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    const embers = [
+        {x: 60, y: 80, r: 3},
+        {x: 150, y: 60, r: 2},
+        {x: 100, y: 100, r: 2.5},
+        {x: 190, y: 90, r: 2}
+    ];
+    embers.forEach(ember => {
+        ctx.beginPath();
+        ctx.arc(ember.x, ember.y, ember.r, 0, Math.PI * 2);
+        ctx.fill();
     });
 }
 
@@ -257,7 +515,7 @@ function drawTamagotchi() {
         } else {
             // Show mood-based sprite or idle animation
             const avgStat = (gameState.hunger + gameState.happiness + gameState.health) / 3;
-            const mood = avgStat >= 70 ? 'happy' : avgStat >= 40 ? 'neutral' : 'sad';
+            const mood = tama.isDead ? 'sad' : (avgStat >= 70 ? 'happy' : avgStat >= 40 ? 'neutral' : 'sad');
 
             if (stageSprites[mood]) {
                 sprite = stageSprites[mood];
@@ -311,18 +569,51 @@ function drawTamagotchi() {
             ctx.save();
             ctx.scale(heartScale, heartScale);
             ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(sprites.items.heart, -16, -16, 32, 32);
-            ctx.restore();
-        }
+         ctx.drawImage(sprites.items.heart, -16, -16, 32, 32);
+         ctx.restore();
+     }
+     ctx.restore();
+ }
 
-        ctx.restore();
-    }
-}
+    // Draw skull overlay when dead
+    if (tama.isDead) {
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // Draw skull emoji or simple skull shape
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+
+        // Skull shape
+        ctx.beginPath();
+        ctx.arc(0, -5, 15, 0, Math.PI * 2); // Head
+        ctx.fill();
+        ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(-5, -8, 2, 0, Math.PI * 2);
+        ctx.arc(5, -8, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mouth (jagged)
+        ctx.beginPath();
+        ctx.moveTo(-6, 0);
+        ctx.lineTo(-3, -2);
+        ctx.lineTo(0, 0);
+        ctx.lineTo(3, -2);
+        ctx.lineTo(6, 0);
+        ctx.stroke();
+
+         ctx.restore();
+     }
+ }
 
 function drawSleepingTamagotchi() {
-    // Clear and draw background
-    ctx.fillStyle = '#c8e6c9';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Draw environment background first
+    drawEnvironmentBackground();
 
     // Draw sleeping Tamagotchi (use neutral sprite or egg if no other stage)
     if (!spritesLoaded) return;
@@ -447,9 +738,8 @@ function animate(currentTime) {
         return;
     }
 
-    // Clear canvas
-    ctx.fillStyle = '#c8e6c9';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Draw environment background (replaces canvas clearing)
+    drawEnvironmentBackground();
 
     // Update and draw active objects (food, balls)
     // Sort by zIndex to control draw order (higher zIndex draws in front)
@@ -567,6 +857,7 @@ setInterval(() => {
     if ((gameState.starvationTimer >= 86400 || gameState.healthTimer >= 86400) &&
         gameState.stage !== 'egg' && gameState.stage !== 'baby') {
         gameState.isAlive = false;
+        handleDeath();
     }
 
     updateUI();
@@ -902,6 +1193,27 @@ function showMessage(msg) {
     }, 2000);
 }
 
+function handleDeath() {
+    // Show permanent death message
+    const msgEl = document.getElementById('status-message');
+    msgEl.textContent = '💀 GAME OVER - YOUR TAMAGOTCHI HAS DIED! 💀';
+    msgEl.style.color = '#ff6b6b';
+    msgEl.style.fontWeight = 'bold';
+
+    // Disable interaction buttons
+    const buttons = ['feed-btn', 'play-btn', 'clean-btn', 'medicine-btn'];
+    buttons.forEach(id => {
+        const btn = document.getElementById(id);
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+    });
+
+    // Force sad expression
+    gameState.isSick = false; // Override sick status to show pure sadness
+    tama.isDead = true; // Add flag for drawing logic
+}
+
 function saveGame() {
     const data = {
         hunger: gameState.hunger,
@@ -957,8 +1269,15 @@ function loadGame() {
 
         document.getElementById('pet-name').textContent = gameState.petName;
 
+        // Handle death state if loading a dead pet
+        if (!gameState.isAlive) {
+            tama.isDead = true;
+            handleDeath();
+        }
+
         // Reload sprites if color variant changed
         loadSprites();
+        applyEnvironmentBackground();
 
         if (gameState.isPaused) {
             document.getElementById('pause-icon').textContent = '▶';
@@ -1026,6 +1345,13 @@ function submitName() {
     if (name.length > 0) {
         gameState.petName = name.toUpperCase().substring(0, 12);
         document.getElementById('pet-name').textContent = gameState.petName;
+
+        // Randomly select variant 1-5 on new game
+        if (!gameState.colorVariant || gameState.colorVariant === 1) {
+            gameState.colorVariant = Math.floor(Math.random() * 5) + 1;
+        }
+        applyEnvironmentBackground();
+
         const modal = document.getElementById('name-modal');
         modal.classList.add('hidden');
         modal.classList.remove('flex');
